@@ -10,4 +10,7 @@ define("CREEP_RENEW_AT", 500); // number of ticket left before renewall
 define("CREEP_RENEW_UPTO", 3000);
 
 
-define("TEST", 1);
+/* Defaults
+*/
+define("DEFAULT_WALL_HITPOINT", 10000);
+

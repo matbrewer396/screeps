@@ -1,3 +1,4 @@
+var params = require('params');
 module.exports = function () {
     Room.prototype.creeps;
     Room.prototype.sources;
@@ -12,12 +13,7 @@ module.exports = function () {
             this.newRoow();
         }
         var spawn = this.find(FIND_MY_SPAWNS)[0];
-
-        this.memory.NumberOf_Target_CARRIER = 0;
-        this.memory.NumberOf_Target_MINER = 2;
-        this.memory.NumberOf_Target_WORKER = 10;
-        this.memory.NumberOf_Min_WORKER = 2;
-
+        this.memory.MinWallHitPoint = params.DEFAULT_WALL_HITPOINT;
         /* Stats
         */
         this.creeps = this.find(FIND_MY_CREEPS);
@@ -95,10 +91,11 @@ module.exports = function () {
         this.memory.roomInit = true;
         this.memory.ALLOW_HAVESTER = true;
 
-        this.memory.NumberOf_Target_CARRIER = 5;
-        this.memory.NumberOf_Target_MINER = 5;
-        this.memory.NumberOf_Target_WORKER = 5;
+        this.memory.NumberOf_Target_CARRIER = 0;
+        this.memory.NumberOf_Target_MINER = 2;
+        this.memory.NumberOf_Target_WORKER = 10;
         this.memory.NumberOf_Min_WORKER = 2;
+        this.memory.MinWallHitPoint = params.DEFAULT_WALL_HITPOINT;
     };
   
     Room.prototype.getEnergyDropTarget = function (controller, pos) {
@@ -119,8 +116,8 @@ module.exports = function () {
             target = pos.findClosestByRange(FIND_STRUCTURES, {
                 filter: (structure) => {
                     return (structure.structureType == STRUCTURE_EXTENSION ||
-                            structure.structureType == STRUCTURE_SPAWN ||
-                            structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
+                            structure.structureType == STRUCTURE_SPAWN) && structure.energy < structure.energyCapacity
+                            ||( structure.structureType == STRUCTURE_TOWER  && (structure.energyCapacity - structure.energy) > 200 ) ;
                 }
             });
         }

@@ -4,6 +4,7 @@
 /// <reference path="prototype.creep.js" />
 /// <reference path="prototype.room.js" />
 /// <reference path="prototype.StructureSpawn.js" />
+/// <reference path="prototype.StructureTower.js" />
 /// <reference path="role.builder.js" />
 /// <reference path="role.carrier.js" />
 /// <reference path="role.harvester.js" />

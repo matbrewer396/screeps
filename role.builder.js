@@ -1,3 +1,4 @@
+var params = require('params');
 var roleBuilder = {
 
     /** @param {Creep} creep **/
@@ -25,7 +26,8 @@ var roleBuilder = {
 	        creep.memory.task = "Builder - Drop off";
 	        if (creep.dropOffEnergy(false, creep.pos)) { return };
 
-			if (creep.memory.repairer == true  || _.sum(this.creeps, (c) => c.memory.repairer == true) < 2) {
+	        if ((creep.memory.repairer == true  || _.sum(this.creeps, (c) => c.memory.repairer == true) < 2)
+	            && params.ALLOW_REPAIER_CREEPS ) {
 				var structureToRepair = creep.pos.findClosestByPath(FIND_STRUCTURES, {
 					filter: (s) => s.hits < s.hitsMax && s.structureType != STRUCTURE_WALL
 				});
@@ -40,7 +42,9 @@ var roleBuilder = {
 				} else {
 					creep.memory.repairer = false;
 				};
-			}
+	        } else {
+	            creep.memory.repairer = false;
+	        };
 			
 
 	        var target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
