@@ -55,10 +55,10 @@ module.exports = function () {
         */
         
         if (this.energyAvailable  == this.energyCapacityAvailable) {
-            //MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Min_WORKER, 'harvester', spawn, undefined)
+            MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Min_WORKER, 'harvester', spawn, undefined)
             MSBSpawnCreep('MINER',noOfMiners, this.memory.NumberOf_Target_MINER, 'miner', spawn, undefined)
            // MSBSpawnCreep('CARRIER',noOfCarrier, this.memory.NumberOf_Target_CARRIER, 'carrier', spawn, [CARRY,CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, MOVE, MOVE])
-            //MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Target_WORKER, 'harvester', spawn, undefined)
+            MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Target_WORKER, 'harvester', spawn, undefined)
         }
         
 
@@ -71,20 +71,20 @@ module.exports = function () {
 
     function MSBSpawnCreep(creepNamePrefix, currentNoOf, noOfCreepRequired, roleName, spawn, body) {
         if ( currentNoOf < noOfCreepRequired) {
-            if (body !== null) {
-                console.log(creepNamePrefix)
-                console.log(body)
-                var name = spawn.getNameName(creepNamePrefix);
-                console.log("Spwaming new creep - " + name)
-                console.log(spawn.spawnCreep(body, name, { memory: { role: roleName } }));
-            } else if (creepNamePrefix == 'WORKER') {
+            
+            if (creepNamePrefix == 'WORKER') {
                 var r = spawn.createCreepWorker(creepNamePrefix,roleName);
                 console.log("Spwaming new worker - " + r);
             } else if (creepNamePrefix == 'MINER') {
                 var r = spawn.createCreepMiner(creepNamePrefix, roleName);
                 console.log("Spwaming new miner - " + r);
+            } else if (body !== null) {
+                console.log(creepNamePrefix)
+                console.log(body)
+                var name = spawn.getNameName(creepNamePrefix);
+                console.log("Spwaming new creep - " + name)
+                console.log(spawn.spawnCreep(body, name, { memory: { role: roleName } }));
             }
-            
         }
     };
 
@@ -101,22 +101,34 @@ module.exports = function () {
         this.memory.NumberOf_Min_WORKER = 2;
     };
   
-    Room.prototype.getEnergyDropTarget = function (controller) {
-        var targets = this.find(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return (structure.structureType == STRUCTURE_EXTENSION ||
-                        structure.structureType == STRUCTURE_SPAWN ||
-                        structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
-            }
-        });
+    Room.prototype.getEnergyDropTarget = function (controller, pos) {
+        var target;
+        if (pos == null) {
+            var targets = this.find(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.structureType == STRUCTURE_EXTENSION ||
+                            structure.structureType == STRUCTURE_SPAWN ||
+                            structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
+                }
+            });
 
-        if(targets.length > 0) {
-            return targets[0];
-        } else if(controller == true) {
-            return this.controller;
+            if (targets.length > 0) {
+                target = targets[0];
+            }  
+        } else {
+            target = pos.findClosestByRange(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (structure.structureType == STRUCTURE_EXTENSION ||
+                            structure.structureType == STRUCTURE_SPAWN ||
+                            structure.structureType == STRUCTURE_TOWER) && structure.energy < structure.energyCapacity;
+                }
+            });
         }
 
-
+        if (controller == true && target == null) {
+            target = this.controller;
+        }
+        return target;
     }
 
     //_.sum(Game.creeps, (c) => c.memory.role == 'harvester');

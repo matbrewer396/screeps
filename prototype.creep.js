@@ -165,7 +165,6 @@ module.exports = function () {
         } else if (this.memory.useSource != null) {
             source = Game.getObjectById(this.memory.useSource)
             this.memory.task = "harvesting from " + source.id;
-            console.log(source.id)
         } else {
             var sources = this.room.find(FIND_SOURCES);
             source = sources[_.random(0, sources.length-1)]
@@ -174,7 +173,6 @@ module.exports = function () {
         }
         
 
-        
         if (this.harvest(source) == ERR_NOT_IN_RANGE) {
             this.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } });
         }
@@ -185,8 +183,8 @@ module.exports = function () {
      * Summary. dropOffEnergy at room target
      * @return boolean 
      */
-    Creep.prototype.dropOffEnergy = function () {
-        var target = this.room.getEnergyDropTarget();
+    Creep.prototype.dropOffEnergy = function (controller, pos) {
+        var target = this.room.getEnergyDropTarget(controller, pos);
 
         if (target == null) {
             return false;

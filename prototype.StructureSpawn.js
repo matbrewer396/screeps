@@ -1,10 +1,12 @@
 ﻿module.exports = function () {
     // create a new function for StructureSpawn
     StructureSpawn.prototype.createCreepWorker = function (creepNamePrefix, roleName) {
-        var maxSize = this.energyCapacityAvailable;
+        var maxSize = this.room.energyCapacityAvailable;
         var noParts = Math.floor(maxSize / 200);
         var body = [];
-
+        console.log(this.room.energyCapacityAvailable);
+        console.log(maxSize)
+        console.log(noParts)
         for (let i = 0; i < noParts; i++) {
             body.push(WORK);
             body.push(CARRY);
@@ -13,8 +15,9 @@
             
         var remainder = (maxSize - noParts * 200)
 
-        noParts = Math.floor(maxSize / 50)
+        noParts = Math.floor(remainder / 50)
         var nextPart = MOVE;
+
         for (let i = 0; i < noParts; i++) {
             body.push(nextPart);
                 
@@ -25,26 +28,26 @@
             }
 
         }
-
-        return this.createCreep(body, this.getNameName(creepNamePrefix), { role: roleName });
+        var name = this.getNameName(creepNamePrefix);
+        console.log("Spwaming new workder - " + name + ' body: ' + body.toString());
+        return this.createCreep(body, name, { role: roleName });
     };
 
     StructureSpawn.prototype.createCreepMiner = function (creepNamePrefix, roleName) {
-        var maxSize = this.energyCapacityAvailable;
-
-        maxSize -50
+        var maxSize = this.room.energyCapacityAvailable;
+        var body = [];
+        // Add move blix
+        maxSize = maxSize - 50;
         body.push(MOVE);
 
         var noParts = Math.floor(maxSize / 100);
-        var body = [];
-
+        
         for (let i = 0; i < noParts; i++) {
             body.push(WORK);
-            body.push(CARRY);
-            body.push(MOVE);
         }
-
-        return this.createCreep(body, this.getNameName(creepNamePrefix), { role: roleName });
+        var name = this.getNameName(creepNamePrefix);
+        console.log("Spwaming new miner - " + name + ' body: ' + body.toString());
+        return this.createCreep(body, name, { role: roleName });
     };
 
     StructureSpawn.prototype.getNameName = function (creepNamePrefix) {
@@ -55,6 +58,6 @@
             name = creepNamePrefix + '_' + name;
         } while (_.sum(this.room.creeps, (c) => c.name == name) !== 0);
 
-        
+        return name;
     };
 };

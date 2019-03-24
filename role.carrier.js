@@ -7,7 +7,7 @@ var roleCarrier = {
             && creep.carry.energy != 0) {
             
             creep.memory.collecting = false;
-            creep.dropOffEnergy();
+            creep.dropOffEnergy(false, creep.pos);
             
         } else {
             creep.memory.collecting = true;

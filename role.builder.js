@@ -23,7 +23,7 @@ var roleBuilder = {
 
 	    if(creep.memory.building) {
 	        creep.memory.task = "Builder - Drop off";
-	        if (creep.dropOffEnergy()) { return };
+	        if (creep.dropOffEnergy(false, creep.pos)) { return };
 
 			if (creep.memory.repairer == true  || _.sum(this.creeps, (c) => c.memory.repairer == true) < 2) {
 				var structureToRepair = creep.pos.findClosestByPath(FIND_STRUCTURES, {
