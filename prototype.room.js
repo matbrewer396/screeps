@@ -13,9 +13,9 @@ module.exports = function () {
         }
         var spawn = this.find(FIND_MY_SPAWNS)[0];
 
-        this.memory.NumberOf_Target_CARRIER = 5;
+        this.memory.NumberOf_Target_CARRIER = 0;
         this.memory.NumberOf_Target_MINER = 2;
-        this.memory.NumberOf_Target_WORKER = 5;
+        this.memory.NumberOf_Target_WORKER = 10;
         this.memory.NumberOf_Min_WORKER = 2;
 
         /* Stats
@@ -55,10 +55,10 @@ module.exports = function () {
         */
         
         if (this.energyAvailable  == this.energyCapacityAvailable) {
-            MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Min_WORKER, 'harvester', spawn, [WORK, WORK, WORK, MOVE, CARRY, CARRY])
-            MSBSpawnCreep('MINER',noOfMiners, this.memory.NumberOf_Target_MINER, 'miner', spawn, [WORK, WORK, WORK, MOVE,MOVE, WORK])
-            MSBSpawnCreep('CARRIER',noOfCarrier, this.memory.NumberOf_Target_CARRIER, 'carrier', spawn, [CARRY,CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, MOVE, MOVE])
-            MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Target_WORKER, 'harvester', spawn, [WORK, WORK, WORK, MOVE, CARRY, CARRY])
+            //MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Min_WORKER, 'harvester', spawn, undefined)
+            MSBSpawnCreep('MINER',noOfMiners, this.memory.NumberOf_Target_MINER, 'miner', spawn, undefined)
+           // MSBSpawnCreep('CARRIER',noOfCarrier, this.memory.NumberOf_Target_CARRIER, 'carrier', spawn, [CARRY,CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, MOVE, MOVE])
+            //MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Target_WORKER, 'harvester', spawn, undefined)
         }
         
 
@@ -71,14 +71,20 @@ module.exports = function () {
 
     function MSBSpawnCreep(creepNamePrefix, currentNoOf, noOfCreepRequired, roleName, spawn, body) {
         if ( currentNoOf < noOfCreepRequired) {
-
-            do  {
-                var name = Math.floor(Math.random() * 8999) + 1000;
-                name = creepNamePrefix + '_' + name;
-            } while (_.sum(this.creeps, (c) => c.name == name) !==0 );
-
-            console.log("Spwaming new worker - "  + name)
-            console.log(spawn.spawnCreep(body, name,  { memory: { role: roleName } } ));
+            if (body !== null) {
+                console.log(creepNamePrefix)
+                console.log(body)
+                var name = spawn.getNameName(creepNamePrefix);
+                console.log("Spwaming new creep - " + name)
+                console.log(spawn.spawnCreep(body, name, { memory: { role: roleName } }));
+            } else if (creepNamePrefix == 'WORKER') {
+                var r = spawn.createCreepWorker(creepNamePrefix,roleName);
+                console.log("Spwaming new worker - " + r);
+            } else if (creepNamePrefix == 'MINER') {
+                var r = spawn.createCreepMiner(creepNamePrefix, roleName);
+                console.log("Spwaming new miner - " + r);
+            }
+            
         }
     };
 
@@ -95,7 +101,7 @@ module.exports = function () {
         this.memory.NumberOf_Min_WORKER = 2;
     };
   
-    Room.prototype.getEnergyDropTarget = function () {
+    Room.prototype.getEnergyDropTarget = function (controller) {
         var targets = this.find(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType == STRUCTURE_EXTENSION ||
@@ -106,7 +112,7 @@ module.exports = function () {
 
         if(targets.length > 0) {
             return targets[0];
-        } else {
+        } else if(controller == true) {
             return this.controller;
         }
 

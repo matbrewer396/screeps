@@ -7,18 +7,7 @@ var roleHarvester = {
 
         
 	    if(creep.carry.energy < creep.carryCapacity) {
-            var source;
-            if (creep.memory.forceSource != null) {
-                var sources = creep.room.find(FIND_SOURCES);
-                source = sources[creep.memory.forceSource];
-            } else {
-                source = creep.pos.findClosestByRange(FIND_SOURCES);
-            }
-            
-            
-            if(creep.harvest(source) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(source, {visualizePathStyle: {stroke: '#ffaa00'}});
-            }
+	        creep.harvestSource()
         }
         else {
             var targets = creep.room.find(FIND_STRUCTURES, {

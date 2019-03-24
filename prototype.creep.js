@@ -41,6 +41,17 @@ module.exports = function () {
                 this.memory.renewing = false;
             }
 
+        } else if ( this.memory.recycle ) {
+            /* Handles recycling
+            */
+            var spawn = this.room.find(FIND_MY_SPAWNS)[0];
+            var r = spawn.recycleCreep(this);
+            console.log("Recycling - " + this.name + ' - ' + r)
+            if (r == ERR_NOT_IN_RANGE) {
+                this.memory.task = "Recycling - Move to Spawn";
+                this.moveTo(spawn);
+            }
+
         } else {
             this.memory.renewing = false
             /* execute roles
@@ -69,7 +80,16 @@ module.exports = function () {
     };
 
 
-    Creep.prototype.collectEnergy = function () {
+    Creep.prototype.collectEnergy = function (havevestIsNone) {
+
+        // Already on route 
+        if (this.memory.useSource != null) {
+            this.harvestSource();
+            return;
+        }
+
+        /* Look for dropped items
+        */
         var dropped = this.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
             filter: (d) => {return (d.resourceType == RESOURCE_ENERGY && d.amount > 50)}
         });
@@ -80,6 +100,9 @@ module.exports = function () {
             }
             return;
         }
+
+        /* head to container
+        */
 
         var container = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
@@ -100,13 +123,85 @@ module.exports = function () {
                 this.moveTo(container);
             }
             return;
+        } else if (havevestIsNone == true) {
+            /* eught should happen 
+            */
+            this.harvestSource();
         }
+
     }
 
+
+    /**
+     * Summary. Assign creep a new role
+     */
     Creep.prototype.newRole = function (roleName) {
         this.memory.role = roleName;
         this.memory.currentRole = roleName;
     }
 
+    /**
+     * Summary. Get cost of creep
+     * @return integer 
+     */
+    Creep.prototype.getBodyCost = function () {
+        var BODYPART_COST = { "move": 50, "work": 100, "attack": 80, "carry": 50, "heal": 250, "ranged_attack": 150, "tough": 10, "claim": 600 };
+        var cost = 0;
+        for (var part in this.body) {
+            cost += BODYPART_COST[this.body[part].type];
+        }
+
+        return cost;
+    }
+
+    /**
+     * Summary. Havest E
+     * @return void
+     */
+    Creep.prototype.harvestSource = function (source) {
+        if (this.memory.forceSource != null) {
+            var sources = this.room.find(FIND_SOURCES);
+            source = sources[creep.memory.forceSource];
+        } else if (this.memory.useSource != null) {
+            source = Game.getObjectById(this.memory.useSource)
+            this.memory.task = "harvesting from " + source.id;
+            console.log(source.id)
+        } else {
+            var sources = this.room.find(FIND_SOURCES);
+            source = sources[_.random(0, sources.length-1)]
+            this.memory.useSource = source.id;
+            this.memory.task = "harvesting from new source" + source.id;
+        }
+        
+
+        
+        if (this.harvest(source) == ERR_NOT_IN_RANGE) {
+            this.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } });
+        }
+
+    }
+
+    /**
+     * Summary. dropOffEnergy at room target
+     * @return boolean 
+     */
+    Creep.prototype.dropOffEnergy = function () {
+        var target = this.room.getEnergyDropTarget();
+
+        if (target == null) {
+            return false;
+        }
+
+        this.memory.task = "Dropping off at " + target.id;
+        var r = this.transfer(target, RESOURCE_ENERGY)
+        
+        if (r == ERR_NOT_IN_RANGE) {
+            this.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
+        } 
+        return true;
+    }
+
+
+    
 
 }

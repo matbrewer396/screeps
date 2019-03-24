@@ -7,6 +7,8 @@ var roleMiner = {
         creep.memory.task = "Miner";
         if (creep.memory.minerSource == null || creep.memory.minerContrainer == null) {
             creep.memory.task = "Find new source";
+            /* find container for source
+            */
             var contrainers = creep.room.find(FIND_STRUCTURES, {
                 filter: (structure) => {
                     return (structure.structureType == STRUCTURE_CONTAINER);

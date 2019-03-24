@@ -9,7 +9,8 @@ var roleUpgrader = {
         }
 
 
-	    if(creep.memory.havesting) {
+        if (creep.memory.havesting) {
+            creep.memory.task = "Upgader - Collect E";
             var sources = creep.room.find(FIND_SOURCES);
             if(creep.harvest(sources[1]) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(sources[1]);
@@ -19,6 +20,7 @@ var roleUpgrader = {
             }
         }
         else {
+            creep.memory.task = "Upgader - dropp off E";
             if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#ffaa00'}});
             }
