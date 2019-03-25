@@ -12,19 +12,20 @@
             body.push(CARRY);
             body.push(MOVE);
         }
-            
+        // work,carry,move,work,carry,move,work,carry,move,work,carry,move,work,carry,move,work,carry,move,move,work
         var remainder = (maxSize - noParts * 200)
-
+        console.log(remainder)
         noParts = Math.floor(remainder / 50)
+        console.log(noParts)
         var nextPart = MOVE;
 
         for (let i = 0; i < noParts; i++) {
             body.push(nextPart);
                 
-            if (nextPart == WORK) {
+            if (nextPart == CARRY) {
                 nextPart = MOVE;
             } else {
-                nextPart = WORK;
+                nextPart = CARRY;
             }
 
         }
@@ -58,30 +59,34 @@
     /**
      * Summary. create long range harvester 
      */
-    StructureSpawn.prototype.createLongRangeHarvester = function (sourceId, noWorkPart) {
+    StructureSpawn.prototype.createLongRangeHarvester = function (sourceId, sourceRoom, carryPartForWork) {
         var maxSize = this.room.energyCapacityAvailable;
         var body = [];
-
-        for (let i = 0; i < noWorkPart; i++) {
-            body.push(WORK);
-            maxSize = maxSize - 100;
-        }
-
-
+        // force one work
+        body.push(WORK);
+        maxSize -= 100;
 
         var noParts = Math.floor(maxSize / 100);
-
+        var addWork = 1;
         for (let i = 0; i < noParts; i++) {
             body.push(MOVE);
             body.push(CARRY);
+            if (addWork >= carryPartForWork && i + 2 < noParts) {
+                body.push(WORK);
+                addWork = 1;
+                i += 2;
+            } else {
+                addWork += 1;
+            }
         }
         var name = this.getNameName('LONG_HARVESTER');
         console.log("Spwaming new miner - " + name + ' body: ' + body.toString());
-        return this.createCreep(body, name
+        /*return this.createCreep(body, name
             , {
                 role: "LongRangeHarvester",
-                sourceId: sourceId
-            });
+                sourceId: sourceId,
+                sourceRoom: sourceRoom
+            });*/
     };
 
     /**

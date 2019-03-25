@@ -64,12 +64,12 @@ module.exports = function () {
         /* spamn creeps
         */
         
-        //if (this.energyAvailable  == this.energyCapacityAvailable) {
-        //    MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Min_WORKER, 'harvester', spawn, undefined)
-        //    MSBSpawnCreep('MINER',noOfMiners, this.memory.NumberOf_Target_MINER, 'miner', spawn, undefined)
-        //   // MSBSpawnCreep('CARRIER',noOfCarrier, this.memory.NumberOf_Target_CARRIER, 'carrier', spawn, [CARRY,CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, MOVE, MOVE])
-        //    MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Target_WORKER, 'harvester', spawn, undefined)
-        //}
+       if (this.energyAvailable  == this.energyCapacityAvailable) {
+            MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Min_WORKER, 'harvester', spawn, undefined)
+            MSBSpawnCreep('MINER',noOfMiners, this.memory.NumberOf_Target_MINER, 'miner', spawn, undefined)
+            MSBSpawnCreep('CARRIER',noOfCarrier, this.memory.NumberOf_Target_CARRIER, 'carrier', spawn, [CARRY,CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, MOVE, MOVE])
+            MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Target_WORKER, 'harvester', spawn, undefined)
+        }
         
 
 

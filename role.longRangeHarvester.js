@@ -15,6 +15,7 @@ var roleLongRangeHarvester = {
         } else if (creep.carry.energy == 0 ) {
             creep.memory.havesting = true;
             if (creep.memory.taskStart == null) {
+                creep.memory.taskStart = null;
                 creep.memory.taskStart = creep.ticksToLive;
             }
             // TODO creep.review();
@@ -36,7 +37,10 @@ var roleLongRangeHarvester = {
             };
 
             var source = Game.getObjectById(creep.memory.sourceId);
+
+            
             var r = creep.harvest(source);
+            console.log(r);
 	        if (r == ERR_NOT_IN_RANGE) {
 	            creep.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } });
 	        }
