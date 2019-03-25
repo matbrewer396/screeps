@@ -8,9 +8,11 @@ require('prototype.StructureTower')();
 var params = require('params');
 
 
-module.exports.loop = function () {
-    
 
+
+
+module.exports.loop = function () {
+   
     /* Clean up memory
     */
     for(var name in Memory.creeps) {
@@ -22,7 +24,7 @@ module.exports.loop = function () {
     /*
     */
     for (var name in Game.rooms) {
-     
+        
         var room = Game.rooms[name];
         if (Memory.primaryRoom == null) {
             Memory.primaryRoom = room.name;    
@@ -41,7 +43,13 @@ module.exports.loop = function () {
         }
 
         room.cleanUp();
+
+
+        
     }
+
+    longRangeTarget()
+    
     
     
    /* if (this.energyAvailable == this.energyCapacityAvailable) {
@@ -52,3 +60,23 @@ module.exports.loop = function () {
 
 
 
+function longRangeTarget() {
+    //TODO: Auto pick these
+    var longRangeTargets = [
+        { sourceId: "70100773019e434", roomName: "W6N3", noOfCreeps: 2, carryPartForWork: 3, spawn: 'Spawn1' },
+        { sourceId: "7cf80773019b1f1", roomName: "W6N3", noOfCreeps: 0, carryPartForWork: 3, spawn: 'Spawn1' }
+    ];
+
+    /* Process target
+    */
+    for (var i in longRangeTargets) {
+        var target = longRangeTargets[i];
+       // console.log(target.sourceId)
+        var noOfCreeps = _.sum(Game.creeps, (c) => c.memory.role == 'LongRangeHarvester' && c.memory.sourceId == target.sourceId);
+     //   console.log(noOfCreeps)
+
+        //if (noOfCreeps < target.noOfCreeps) {
+        //    Game.spawns[target.spawn].createLongRangeHarvester(target.sourceId, target.roomName, target.carryPartForWork);
+        //};
+    };
+}
