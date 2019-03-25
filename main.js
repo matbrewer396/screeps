@@ -63,8 +63,8 @@ module.exports.loop = function () {
 function longRangeTarget() {
     //TODO: Auto pick these
     var longRangeTargets = [
-        { sourceId: "70100773019e434", roomName: "W6N3", noOfCreeps: 2, carryPartForWork: 3, spawn: 'Spawn1' },
-        { sourceId: "7cf80773019b1f1", roomName: "W6N3", noOfCreeps: 0, carryPartForWork: 3, spawn: 'Spawn1' }
+        { sourceId: "70100773019e434", roomName: "W6N3", noOfCreeps: 3, carryPartForWork: 3, spawn: 'Spawn1' },
+        { sourceId: "7cf80773019b1f1", roomName: "W6N3", noOfCreeps: 3, carryPartForWork: 3, spawn: 'Spawn1' }
     ];
 
     /* Process target
@@ -73,10 +73,10 @@ function longRangeTarget() {
         var target = longRangeTargets[i];
        // console.log(target.sourceId)
         var noOfCreeps = _.sum(Game.creeps, (c) => c.memory.role == 'LongRangeHarvester' && c.memory.sourceId == target.sourceId);
-     //   console.log(noOfCreeps)
+        console.log(noOfCreeps)
 
-        //if (noOfCreeps < target.noOfCreeps) {
-        //    Game.spawns[target.spawn].createLongRangeHarvester(target.sourceId, target.roomName, target.carryPartForWork);
-        //};
+        if (noOfCreeps < target.noOfCreeps && Game.spawns[target.spawn].room.energyAvailable == Game.spawns[target.spawn].room.energyCapacityAvailable) {
+            Game.spawns[target.spawn].createLongRangeHarvester(target.sourceId, target.roomName, target.carryPartForWork);
+        };
     };
 }

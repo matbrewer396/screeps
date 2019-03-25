@@ -1,7 +1,6 @@
 var roleHarvester = require('role.harvester');
 var roleUpgrader = require('role.upgrader');
 var roleBuilder = require('role.builder');
-var roleBuilder = require('role.builder');
 var roleMiner = require('role.miner');
 var roleCarrier = require('role.carrier');
 var roleLongRangeHarvester = require('role.longRangeHarvester');
@@ -9,6 +8,17 @@ var roleLongRangeHarvester = require('role.longRangeHarvester');
 var params = require('params');
 
 module.exports = function () {
+
+    var roles = [
+        { roleName: "harvester", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
+        { roleName: "upgrader", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
+        { roleName: "builder", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
+        { roleName: "miner", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
+        { roleName: "carrier", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
+        { roleName: "longRangeHarvester", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
+    ];
+
+
     /**
      * Summary. Process creep
      */
@@ -26,65 +36,7 @@ module.exports = function () {
         if (this.memory.tickBeforeRenew == null) {
             this.memory.tickBeforeRenew = params.CREEP_TICKS_BETWEEN_REVIEW;
         } else if (this.memory.tickBeforeRenew == 0) {
-            /* Is old Model?
-            */
-            bodyCode = this.getBodyCost();
-            var maxBodySize = Game.rooms[Memory.primaryRoom].energyCapacityAvailable
-
-            if (this.memory.role == 'miner') {
-                maxBodySize = 1050 // 10 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
-            }
-
-
-            if (this.getBodyCost() < maxBodySize - 150) { // 150 allow for rounding
-                // Disable to allow new model to be created
-                this.memory.AllowRenewing = false;
-            } else {
-                this.memory.AllowRenewing = true;
-            }
-
-            /* Deal with renewing
-            */
-            if (params.ALLOW_CREEP_RENEWING
-                && this.room.noOfCreeps > 1
-                && this.memory.AllowRenewing != false
-                && ((this.ticksToLive < params.CREEP_RENEW_AT)
-                    || (this.memory.renewing && this.ticksToLive < params.CREEP_RENEW_UPTO)
-                    ) ) {
-
-                /* Max number of creeps allowed to renew
-                */
-                if (this.memory.renewing == false && _.sum(this.room.creeps, (c) => c.memory.renewing == true) >= (params.CREEP_RENEW_AT_SAME_TIME - 1)) {
-
-                }
-                console.log("Renewing - " + this.name)
-                this.memory.task = "Renewing";
-                this.memory.renewing = true;
-                var spawn = this.room.find(FIND_MY_SPAWNS)[0];
-                var r = spawn.renewCreep(this);
-                console.log("Renewing - " + this.name + ' - ' + r)
-                if (r == ERR_NOT_IN_RANGE) {
-                    this.memory.task = "Renewing - Move to Spawn";
-                    this.moveTo(spawn);
-                } else if (r == ERR_FULL) {
-                    this.memory.renewing = false;
-                }
-                return;
-            } else if (this.memory.recycle) {
-                /* Handles recycling
-                */
-                var spawn = this.room.find(FIND_MY_SPAWNS)[0];
-                var r = spawn.recycleCreep(this);
-                console.log("Recycling - " + this.name + ' - ' + r)
-                if (r == ERR_NOT_IN_RANGE) {
-                    this.memory.task = "Recycling - Move to Spawn";
-                    this.moveTo(spawn);
-                }
-                return
-            } else {
-                this.memory.renewing = false
-                this.memory.tickBeforeRenew = params.CREEP_TICKS_BETWEEN_REVIEW;
-            }
+            if(this.review()) { return };
         } else {
             this.memory.tickBeforeRenew -= 1;
         }
@@ -114,6 +66,78 @@ module.exports = function () {
         
             
     };
+
+    /**
+     * Summary. Review creep should recycle or repair
+     */
+    Creep.prototype.review = function () {
+        /* Is old Model?
+           */
+        bodyCode = this.getBodyCost();
+        var maxBodySize = Game.rooms[Memory.primaryRoom].energyCapacityAvailable
+
+        if (this.memory.role == 'miner') {
+            maxBodySize = 1050 // 10 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
+        }
+
+
+        if (this.getBodyCost() < maxBodySize - 150) { // 150 allow for rounding
+            // Disable to allow new model to be created
+            this.memory.AllowRenewing = false;
+        } else {
+            this.memory.AllowRenewing = true;
+        }
+
+        /* Deal with renewing
+        */
+        if (params.ALLOW_CREEP_RENEWING
+            && this.room.noOfCreeps > 1
+            && this.memory.AllowRenewing != false
+            && ((this.ticksToLive < params.CREEP_RENEW_AT)
+                || (this.memory.renewing && this.ticksToLive < params.CREEP_RENEW_UPTO)
+                ) ) {
+
+            /* Max number of creeps allowed to renew
+            */
+            if (this.memory.renewing == false
+                && _.sum(this.room.creeps, (c) => c.memory.renewing == true) >= (params.CREEP_RENEW_AT_SAME_TIME - 1))
+            {
+                this.memory.tickBeforeRenew = 5; // try again later
+                return false;
+            }
+            console.log("Renewing - " + this.name)
+            this.memory.task = "Renewing";
+            this.memory.renewing = true;
+            var spawn = this.room.find(FIND_MY_SPAWNS)[0];
+            var r = spawn.renewCreep(this);
+            console.log("Renewing - " + this.name + ' - ' + r)
+            if (r == ERR_NOT_IN_RANGE) {
+                this.memory.task = "Renewing - Move to Spawn";
+                this.moveTo(spawn);
+                return true;
+            } else if (r == ERR_FULL) {
+                this.memory.renewing = false;
+                this.memory.tickBeforeRenew = params.CREEP_TICKS_BETWEEN_REVIEW;
+                return false;
+            }
+        } else if (this.memory.recycle) {
+            /* Handles recycling
+            */
+            var spawn = this.room.find(FIND_MY_SPAWNS)[0];
+            var r = spawn.recycleCreep(this);
+            console.log("Recycling - " + this.name + ' - ' + r)
+            if (r == ERR_NOT_IN_RANGE) {
+                this.memory.task = "Recycling - Move to Spawn";
+                this.moveTo(spawn);
+            }
+            return true;
+        } else {
+            this.memory.renewing = false
+            this.memory.tickBeforeRenew = params.CREEP_TICKS_BETWEEN_REVIEW;
+            return false;
+        }
+        
+    }
 
 
     Creep.prototype.collectEnergy = function (havevestIsNone) {
@@ -220,11 +244,27 @@ module.exports = function () {
      * @return boolean 
      */
     Creep.prototype.dropOffEnergy = function (controller) {
-        var target = this.room.getEnergyDropTarget(controller, this.pos);
+        var target;
+
+        /* Find existing target
+        */
+        target = Game.getObjectById(this.memory.dropOffTargetId);
+        if (target && target.energy && target.energy == target.energyCapacity) { // is still valid?
+            target = null;
+            this.memory.dropOffTargetId = null
+        }
+
+        /*
+        */
+        if (target == null) {
+            target = this.room.getEnergyDropTarget(controller, this.pos);
+        };
 
         if (target == null) {
             return false;
         }
+
+        this.memory.dropOffTargetId = target.id;
 
         this.memory.task = "Dropping off at " + target.id;
         var r = this.transfer(target, RESOURCE_ENERGY)
@@ -276,6 +316,21 @@ module.exports = function () {
         }
     }
 
+   /**
+   * Summary.  Called when task completed
+   * @return boolean - ture in home room, false moving
+   */
+    Creep.prototype.taskCompleted = function () {
+        
+        /* clean temp var
+        */
+        this.memory.dropOffTargetId = null;
+        this.memory.currentRole = this.memory.role; // Reset to primary role
+        this.memory.building = false;
+        this.memory.havesting = true;
+
+        return this.review();
+    }
 
     
 

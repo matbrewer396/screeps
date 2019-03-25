@@ -12,24 +12,19 @@ var roleLongRangeHarvester = {
             if (creep.memory.taskCompleted == null) {
                 creep.memory.taskCompleted = creep.memory.taskStart - creep.ticksToLive;
             }
-        } else if (creep.carry.energy == 0 ) {
-            creep.memory.havesting = true;
+        } else if (creep.carry.energy == 0) {
+            if (creep.taskCompleted()) { return };
+            
             if (creep.memory.taskStart == null) {
                 creep.memory.taskStart = null;
                 creep.memory.taskStart = creep.ticksToLive;
             }
-            // TODO creep.review();
         }
-       // creep.move(LEFT );
-        //creep.memory.sourceRoom = "W6N3";
 
         if (creep.memory.havesting) {
             var source = Game.getObjectById(creep.memory.sourceId);
-            console.log(source);
             /* Go to source
             */
-            console.log(creep.memory.sourceRoom != creep.room.name);
-            console.log(creep.memory.sourceRoom +' - ' +  creep.room.name);
             if (creep.memory.sourceRoom != creep.room.name) {
                 var exits = creep.room.findExitTo(creep.memory.sourceRoom);
                 creep.moveTo(creep.pos.findClosestByRange(exits));
@@ -40,7 +35,6 @@ var roleLongRangeHarvester = {
 
             
             var r = creep.harvest(source);
-            console.log(r);
 	        if (r == ERR_NOT_IN_RANGE) {
 	            creep.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } });
 	        }

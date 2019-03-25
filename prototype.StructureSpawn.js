@@ -12,7 +12,6 @@
             body.push(CARRY);
             body.push(MOVE);
         }
-        // work,carry,move,work,carry,move,work,carry,move,work,carry,move,work,carry,move,work,carry,move,move,work
         var remainder = (maxSize - noParts * 200)
         console.log(remainder)
         noParts = Math.floor(remainder / 50)
@@ -81,12 +80,12 @@
         }
         var name = this.getNameName('LONG_HARVESTER');
         console.log("Spwaming new miner - " + name + ' body: ' + body.toString());
-        /*return this.createCreep(body, name
+        return this.createCreep(body, name
             , {
                 role: "LongRangeHarvester",
                 sourceId: sourceId,
                 sourceRoom: sourceRoom
-            });*/
+            });
     };
 
     /**

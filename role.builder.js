@@ -8,8 +8,7 @@ var roleBuilder = {
 		// Get Resoruces
         if ((creep.memory.building && creep.carry.energy == 0) || !creep.memory.building) {
             creep.memory.task = "Builder - Collect E";
-			creep.memory.currentRole = creep.memory.role; // Reset to primary role
-			creep.memory.building = false;
+            if (creep.taskCompleted()) { return };
 			creep.collectEnergy(true);
 		} 
 		
