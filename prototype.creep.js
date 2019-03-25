@@ -11,72 +11,93 @@ module.exports = function () {
 
     Creep.prototype.run = function () {
         this.memory.task = "...";
+
         if (this.memory.currentRole == null){
             console.log("roles is null")
             this.memory.currentRole = this.memory.role
         }
-        
-        
-        /* Deal with renewing
-        */ 
-        if ( params.ALLOW_CREEP_RENEWING
-            && this.room.noOfCreeps > 1
-            && ( (this.ticksToLive<params.CREEP_RENEW_AT && _.sum(this.room.creeps, (c) => c.memory.renewing == true) == 0) 
-                || ( this.memory.renewing && this.ticksToLive < params.CREEP_RENEW_UPTO  ) 
-               ) 
-             
-            ) 
-        {
-            console.log("Renewing - " + this.name)
-            this.memory.task = "Renewing";
-            this.memory.renewing = true;
-            var spawn = this.room.find(FIND_MY_SPAWNS)[0];
-            var r = spawn.renewCreep(this);
-            console.log("Renewing - " + this.name+ ' - ' + r)
-            if(r == ERR_NOT_IN_RANGE)
-            {
-                this.memory.task = "Renewing - Move to Spawn";
-                this.moveTo(spawn);
-            } else if (r == ERR_FULL) {
-                this.memory.renewing = false;
-            }
 
-        } else if ( this.memory.recycle ) {
-            /* Handles recycling
+        /* Review Creep
+        */
+        //console.log("mem " + this.memory.tickBeforeRenew);
+        if (this.memory.tickBeforeRenew == null) {
+            this.memory.tickBeforeRenew = params.CREEP_TICKS_BETWEEN_REVIEW;
+        } else if (this.memory.tickBeforeRenew == 0) {
+            /* Is old Model?
             */
-            var spawn = this.room.find(FIND_MY_SPAWNS)[0];
-            var r = spawn.recycleCreep(this);
-            console.log("Recycling - " + this.name + ' - ' + r)
-            if (r == ERR_NOT_IN_RANGE) {
-                this.memory.task = "Recycling - Move to Spawn";
-                this.moveTo(spawn);
+            bodyCode = this.getBodyCost();
+            if (this.getBodyCost() < Game.rooms[Memory.primaryRoom].energyCapacityAvailable - 150) {
+                // Disable to allow new model to be created
+                this.memory.AllowRenewing = false;
+            } else {
+                this.memory.AllowRenewing = true;
             }
 
+            /* Deal with renewing
+            */
+            if (params.ALLOW_CREEP_RENEWING
+                && this.room.noOfCreeps > 1
+                && this.memory.AllowRenewing != false
+                && ((this.ticksToLive < params.CREEP_RENEW_AT)
+                    || (this.memory.renewing && this.ticksToLive < params.CREEP_RENEW_UPTO)
+                    ) ) {
+
+                /* Max number of creeps allowed to renew
+                */
+                if (this.memory.renewing == false && _.sum(this.room.creeps, (c) => c.memory.renewing == true) >= (params.CREEP_RENEW_AT_SAME_TIME - 1)) {
+
+                }
+                console.log("Renewing - " + this.name)
+                this.memory.task = "Renewing";
+                this.memory.renewing = true;
+                var spawn = this.room.find(FIND_MY_SPAWNS)[0];
+                var r = spawn.renewCreep(this);
+                console.log("Renewing - " + this.name + ' - ' + r)
+                if (r == ERR_NOT_IN_RANGE) {
+                    this.memory.task = "Renewing - Move to Spawn";
+                    this.moveTo(spawn);
+                } else if (r == ERR_FULL) {
+                    this.memory.renewing = false;
+                }
+                return
+            } else if (this.memory.recycle) {
+                /* Handles recycling
+                */
+                var spawn = this.room.find(FIND_MY_SPAWNS)[0];
+                var r = spawn.recycleCreep(this);
+                console.log("Recycling - " + this.name + ' - ' + r)
+                if (r == ERR_NOT_IN_RANGE) {
+                    this.memory.task = "Recycling - Move to Spawn";
+                    this.moveTo(spawn);
+                }
+                return
+            } else {
+                this.memory.renewing = false
+                this.memory.tickBeforeRenew = params.CREEP_TICKS_BETWEEN_REVIEW;
+            }
         } else {
-            this.memory.renewing = false
-            /* execute roles
-            */ 
-            if(this.memory.currentRole == 'harvester') {
-                roleHarvester.run(this);
-            }
-            if(this.memory.currentRole == 'upgrader') {
-                roleUpgrader.run(this);
-            }
-            if(this.memory.currentRole == 'builder' ) {
-                roleBuilder.run(this);
-            }
-            if(this.memory.currentRole == 'miner' ) {
-                roleMiner.run(this);
-            }
-            if(this.memory.currentRole == 'carrier' ) {
-                roleCarrier.run(this);
-            }
-
-            
-
-
-            
+            this.memory.tickBeforeRenew -= 1;
         }
+       
+        
+        /* execute roles
+        */ 
+        if(this.memory.currentRole == 'harvester') {
+            roleHarvester.run(this);
+        }
+        if(this.memory.currentRole == 'upgrader') {
+            roleUpgrader.run(this);
+        }
+        if(this.memory.currentRole == 'builder' ) {
+            roleBuilder.run(this);
+        }
+        if(this.memory.currentRole == 'miner' ) {
+            roleMiner.run(this);
+        }
+        if(this.memory.currentRole == 'carrier' ) {
+            roleCarrier.run(this);
+        }
+            
     };
 
 

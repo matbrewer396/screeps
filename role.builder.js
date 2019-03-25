@@ -21,11 +21,13 @@ var roleBuilder = {
 			creep.memory.useSource = undefined;
 		}
 
-
+        
 	    if(creep.memory.building) {
 	        creep.memory.task = "Builder - Drop off";
+            // drop off E
 	        if (creep.dropOffEnergy(false, creep.pos)) { return };
 
+            // Repairer
 	        if ((creep.memory.repairer == true  || _.sum(this.creeps, (c) => c.memory.repairer == true) < 2)
 	            && params.ALLOW_REPAIER_CREEPS ) {
 				var structureToRepair = creep.pos.findClosestByPath(FIND_STRUCTURES, {
@@ -46,7 +48,7 @@ var roleBuilder = {
 	            creep.memory.repairer = false;
 	        };
 			
-
+            //Builder
 	        var target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
 				filter: (structure) => { 
 					return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) }
