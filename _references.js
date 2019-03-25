@@ -8,6 +8,7 @@
 /// <reference path="role.builder.js" />
 /// <reference path="role.carrier.js" />
 /// <reference path="role.harvester.js" />
+/// <reference path="role.longRangeHarvester.js" />
 /// <reference path="role.miner.js" />
 /// <reference path="role.upgrader.js" />
 /// <reference path="ScreepsAutocomplete-master/ConstructionSite.js" />

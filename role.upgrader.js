@@ -21,9 +21,7 @@ var roleUpgrader = {
         }
         else {
             creep.memory.task = "Upgader - dropp off E";
-            if(creep.upgradeController(creep.room.controller) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(creep.room.controller, {visualizePathStyle: {stroke: '#ffaa00'}});
-            }
+            creep.upgradeRoomController();
         }
 	}
 };

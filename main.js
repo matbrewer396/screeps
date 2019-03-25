@@ -21,28 +21,32 @@ module.exports.loop = function () {
     }
     /*
     */
-    var room;
-    for(var name in Game.rooms) {
-         //ToDo Add muitple room support
-         room = Game.rooms[name];
-         if (Memory.primaryRoom == null) {
+    for (var name in Game.rooms) {
+     
+        var room = Game.rooms[name];
+        if (Memory.primaryRoom == null) {
             Memory.primaryRoom = room.name;    
             console.log('Settings primary room: ' +  room.name);
         }
+        room.startUp();
+        /* process creeps
+        */
+        for (var name in room.creeps) {
+            room.creeps[name].run();
+        }
+
+        var towers = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
+        for (var tower in towers) {
+            towers[tower].run();
+        }
+
+        room.cleanUp();
     }
     
-    room.startUp();
-
-    for(var name in room.creeps) {
-        room.creeps[name].run();
-    }
-
-    var towers = room.find(FIND_MY_STRUCTURES, {filter: {structureType: STRUCTURE_TOWER}});
-    for (var tower in towers) {
-        towers[tower].run();
-    }
-
-    room.cleanUp(); 
+    
+   /* if (this.energyAvailable == this.energyCapacityAvailable) {
+        Game.spawns["Spawn1"].createLongRangeHarvester('70100773019e434', 2);
+    }*/
 };
 
 

@@ -50,6 +50,38 @@
         return this.createCreep(body, name, { role: roleName });
     };
 
+    /**
+     * Summary. create long range harvester 
+     */
+    StructureSpawn.prototype.createLongRangeHarvester = function (sourceId, noWorkPart) {
+        var maxSize = this.room.energyCapacityAvailable;
+        var body = [];
+
+        for (let i = 0; i < noWorkPart; i++) {
+            body.push(WORK);
+            maxSize = maxSize - 100;
+        }
+
+
+
+        var noParts = Math.floor(maxSize / 100);
+
+        for (let i = 0; i < noParts; i++) {
+            body.push(MOVE);
+            body.push(CARRY);
+        }
+        var name = this.getNameName('LONG_HARVESTER');
+        console.log("Spwaming new miner - " + name + ' body: ' + body.toString());
+        return this.createCreep(body, name
+            , {
+                role: "LongRangeHarvester",
+                sourceId: sourceId
+            });
+    };
+
+    /**
+     * Summary. get unused name
+     */
     StructureSpawn.prototype.getNameName = function (creepNamePrefix) {
         /* Get name
         */

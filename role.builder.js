@@ -25,7 +25,7 @@ var roleBuilder = {
 	    if(creep.memory.building) {
 	        creep.memory.task = "Builder - Drop off";
             // drop off E
-	        if (creep.dropOffEnergy(false, creep.pos)) { return };
+	        if (creep.dropOffEnergy(false)) { return };
 
             // Repairer
 	        if ((creep.memory.repairer == true  || _.sum(this.creeps, (c) => c.memory.repairer == true) < 2)
@@ -58,10 +58,6 @@ var roleBuilder = {
 				var target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)
 			}
 
-
-			if(!target) { 
-				console.log("Nothing to build")
-			}
 
             if(target) {
 				creep.memory.task = "Building";

@@ -8,6 +8,15 @@ module.exports = function () {
 
 
     Room.prototype.startUp = function () {
+        // TODO Clean up hack
+        var primaryRoom;
+        if (this.name == Memory.primaryRoom) {
+            primaryRoom = true;
+        } else {
+            primaryRoom = false;
+        }
+
+        
         // Setup memory objects
         if (this.memory.roomInit == null) {
             this.newRoow();
@@ -29,11 +38,16 @@ module.exports = function () {
         this.noOfSources = _.sum(this.sources);
 
         console.log('EnergyAvailable: ' + this.energyAvailable + ' of ' + this.energyCapacityAvailable );
-        console.log('Creeps: ' + this.noOfCreeps + ', harvesters: ' + noOfHarvesters 
+        console.log(this.name + ' - Creeps: ' + this.noOfCreeps + ', harvesters: ' + noOfHarvesters 
         + ', Miners: ' + noOfMiners + ', Builder ' + noOfBuilder + ', Carrier ' + noOfCarrier + ', Renwing ' + noOfCreepsRenewing);
 
+        if (primaryRoom == false) { return };
+
         /* Room Settings
-        */ 
+        */
+
+
+
         if (noOfMiners >= 1 && this.memory.ALLOW_HAVESTER == true) {
             this.memory.ALLOW_HAVESTER = false;
         }
@@ -50,12 +64,12 @@ module.exports = function () {
         /* spamn creeps
         */
         
-        if (this.energyAvailable  == this.energyCapacityAvailable) {
-            MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Min_WORKER, 'harvester', spawn, undefined)
-            MSBSpawnCreep('MINER',noOfMiners, this.memory.NumberOf_Target_MINER, 'miner', spawn, undefined)
-           // MSBSpawnCreep('CARRIER',noOfCarrier, this.memory.NumberOf_Target_CARRIER, 'carrier', spawn, [CARRY,CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, MOVE, MOVE])
-            MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Target_WORKER, 'harvester', spawn, undefined)
-        }
+        //if (this.energyAvailable  == this.energyCapacityAvailable) {
+        //    MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Min_WORKER, 'harvester', spawn, undefined)
+        //    MSBSpawnCreep('MINER',noOfMiners, this.memory.NumberOf_Target_MINER, 'miner', spawn, undefined)
+        //   // MSBSpawnCreep('CARRIER',noOfCarrier, this.memory.NumberOf_Target_CARRIER, 'carrier', spawn, [CARRY,CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, WORK, MOVE, MOVE])
+        //    MSBSpawnCreep('WORKER',noOfWorkers, this.memory.NumberOf_Target_WORKER, 'harvester', spawn, undefined)
+        //}
         
 
 

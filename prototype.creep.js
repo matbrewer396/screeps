@@ -4,11 +4,14 @@ var roleBuilder = require('role.builder');
 var roleBuilder = require('role.builder');
 var roleMiner = require('role.miner');
 var roleCarrier = require('role.carrier');
+var roleLongRangeHarvester = require('role.longRangeHarvester');
 
 var params = require('params');
 
 module.exports = function () {
-
+    /**
+     * Summary. Process creep
+     */
     Creep.prototype.run = function () {
         this.memory.task = "...";
 
@@ -59,7 +62,7 @@ module.exports = function () {
                 } else if (r == ERR_FULL) {
                     this.memory.renewing = false;
                 }
-                return
+                return;
             } else if (this.memory.recycle) {
                 /* Handles recycling
                 */
@@ -97,6 +100,11 @@ module.exports = function () {
         if(this.memory.currentRole == 'carrier' ) {
             roleCarrier.run(this);
         }
+        if (this.memory.currentRole == 'LongRangeHarvester') {
+            roleLongRangeHarvester.run(this);
+        }
+
+        
             
     };
 
@@ -204,8 +212,8 @@ module.exports = function () {
      * Summary. dropOffEnergy at room target
      * @return boolean 
      */
-    Creep.prototype.dropOffEnergy = function (controller, pos) {
-        var target = this.room.getEnergyDropTarget(controller, pos);
+    Creep.prototype.dropOffEnergy = function (controller) {
+        var target = this.room.getEnergyDropTarget(controller, this.pos);
 
         if (target == null) {
             return false;
@@ -218,6 +226,49 @@ module.exports = function () {
             this.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
         } 
         return true;
+    }
+
+
+    /**
+    * Summary. Process creep
+    * @return boolean - ture in home room, false moving
+    */
+    Creep.prototype.goHomeRoom = function () {
+        console.log('go home');
+        var homeRoom = Game.rooms[Memory.primaryRoom];
+        console.log('go home ' + homeRoom);
+        if (homeRoom == this.room) {
+            return true; // Creep is home
+        } else {
+            var exits = this.room.findExitTo(homeRoom);
+            this.moveTo(this.pos.findClosestByRange(exits));
+            return false;
+        }
+    }
+
+
+    /**
+    * Summary. Is in home room
+    * @return boolean - ture in home room, false moving
+    */
+    Creep.prototype.isHome = function () {
+        
+        var homeRoom = Game.rooms[Memory.primaryRoom];
+        if (homeRoom == this.room) {
+            return true; // Creep is home
+        } else {
+            return false;
+        }
+    }
+
+   /**
+   * Summary. 
+   * @return boolean - ture in home room, false moving
+   */
+    Creep.prototype.upgradeRoomController = function () {
+        if (this.upgradeController(this.room.controller) == ERR_NOT_IN_RANGE) {
+            this.moveTo(this.room.controller, { visualizePathStyle: { stroke: '#ffaa00' } });
+        }
     }
 
 
