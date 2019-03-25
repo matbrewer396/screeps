@@ -13,12 +13,18 @@ module.exports = function () {
         { roleName: "harvester", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
         { roleName: "upgrader", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
         { roleName: "builder", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
-        { roleName: "miner", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
+        { roleName: "miner", tickBeforeRenew: 1000 },
         { roleName: "carrier", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
-        { roleName: "longRangeHarvester", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
+        { roleName: "LongRangeHarvester", tickBeforeRenew: 1000 },
     ];
 
-
+    /**
+     * Summary. Process creep
+     */
+    Creep.prototype.getRole = function roleName() {
+        var myRole = this.memory.role;
+        return roles.filter(function (r) { return r.roleName == myRole })[0];
+    }
     /**
      * Summary. Process creep
      */
@@ -34,7 +40,7 @@ module.exports = function () {
         */
         //console.log("mem " + this.memory.tickBeforeRenew);
         if (this.memory.tickBeforeRenew == null) {
-            this.memory.tickBeforeRenew = params.CREEP_TICKS_BETWEEN_REVIEW;
+            this.memory.tickBeforeRenew = this.getRole().tickBeforeRenew;
         } else if (this.memory.tickBeforeRenew == 0) {
             if(this.review()) { return };
         } else {
@@ -72,7 +78,9 @@ module.exports = function () {
      */
     Creep.prototype.review = function () {
         /* Is old Model?
-           */
+        */
+
+        //roles[this.memory.role].tickBeforeRenew
         bodyCode = this.getBodyCost();
         var maxBodySize = Game.rooms[Memory.primaryRoom].energyCapacityAvailable
 
@@ -102,6 +110,7 @@ module.exports = function () {
             if (this.memory.renewing == false
                 && _.sum(this.room.creeps, (c) => c.memory.renewing == true) >= (params.CREEP_RENEW_AT_SAME_TIME - 1))
             {
+                // TODo LongRangeHarvester must not go if cant make it this.getRole().roleName == ""LongRangeHarvester"
                 this.memory.tickBeforeRenew = 5; // try again later
                 return false;
             }
@@ -117,7 +126,7 @@ module.exports = function () {
                 return true;
             } else if (r == ERR_FULL) {
                 this.memory.renewing = false;
-                this.memory.tickBeforeRenew = params.CREEP_TICKS_BETWEEN_REVIEW;
+                this.memory.tickBeforeRenew = this.getRole().tickBeforeRenew;
                 return false;
             }
         } else if (this.memory.recycle) {
@@ -133,7 +142,7 @@ module.exports = function () {
             return true;
         } else {
             this.memory.renewing = false
-            this.memory.tickBeforeRenew = params.CREEP_TICKS_BETWEEN_REVIEW;
+            this.memory.tickBeforeRenew = this.getRole().tickBeforeRenew;
             return false;
         }
         
@@ -254,7 +263,7 @@ module.exports = function () {
             this.memory.dropOffTargetId = null
         }
 
-        /*
+        /* get new target
         */
         if (target == null) {
             target = this.room.getEnergyDropTarget(controller, this.pos);
