@@ -41,6 +41,11 @@
         body.push(MOVE);
 
         var noParts = Math.floor(maxSize / 100);
+
+        // 3000 E / regen every 30
+        if (noParts > 10) {
+            noParts = 10
+        };
         
         for (let i = 0; i < noParts; i++) {
             body.push(WORK);

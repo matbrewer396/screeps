@@ -29,7 +29,14 @@ module.exports = function () {
             /* Is old Model?
             */
             bodyCode = this.getBodyCost();
-            if (this.getBodyCost() < Game.rooms[Memory.primaryRoom].energyCapacityAvailable - 150) {
+            var maxBodySize = Game.rooms[Memory.primaryRoom].energyCapacityAvailable
+
+            if (this.memory.role == 'miner') {
+                maxBodySize = 1050 // 10 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
+            }
+
+
+            if (this.getBodyCost() < maxBodySize - 150) { // 150 allow for rounding
                 // Disable to allow new model to be created
                 this.memory.AllowRenewing = false;
             } else {
@@ -94,13 +101,13 @@ module.exports = function () {
         if(this.memory.currentRole == 'builder' ) {
             roleBuilder.run(this);
         }
-        if(this.memory.currentRole == 'miner' ) {
+        if (this.memory.role == 'miner') {
             roleMiner.run(this);
         }
-        if(this.memory.currentRole == 'carrier' ) {
+        if (this.memory.role == 'carrier') {
             roleCarrier.run(this);
         }
-        if (this.memory.currentRole == 'LongRangeHarvester') {
+        if (this.memory.role == 'LongRangeHarvester') {
             roleLongRangeHarvester.run(this);
         }
 
@@ -234,9 +241,7 @@ module.exports = function () {
     * @return boolean - ture in home room, false moving
     */
     Creep.prototype.goHomeRoom = function () {
-        console.log('go home');
         var homeRoom = Game.rooms[Memory.primaryRoom];
-        console.log('go home ' + homeRoom);
         if (homeRoom == this.room) {
             return true; // Creep is home
         } else {
