@@ -1,5 +1,6 @@
 var params = require('params');
 var roleBuilder = {
+    // TODO refactor to worked
 
     /** @param {Creep} creep **/
     run: function(creep) {

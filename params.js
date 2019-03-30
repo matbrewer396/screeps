@@ -16,5 +16,5 @@ define("CREEP_RENEW_AT_SAME_TIME", 1);
 
 /* Defaults
 */
-define("DEFAULT_WALL_HITPOINT", 10000);
+define("DEFAULT_WALL_HITPOINT", 12000);
 

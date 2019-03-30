@@ -10,12 +10,48 @@ var params = require('params');
 module.exports = function () {
 
     var roles = [
-        { roleName: "harvester", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
-        { roleName: "upgrader", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
-        { roleName: "builder", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
-        { roleName: "miner", tickBeforeRenew: 1000 },
-        { roleName: "carrier", tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW },
-        { roleName: "LongRangeHarvester", tickBeforeRenew: 1000 },
+        {
+            roleName: "harvester",
+            tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW,
+            renewAt: params.CREEP_RENEW_AT,
+            enforeMaxNoOfCreepReviewAtOnce: true,
+            overRideReviewAtOnceIfLiveLessThen: 300
+        },
+        {
+            roleName: "upgrader",
+            tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW,
+            renewAt: params.CREEP_RENEW_AT,
+            enforeMaxNoOfCreepReviewAtOnce: true,
+            overRideReviewAtOnceIfLiveLessThen: 300
+        },
+        {
+            roleName: "builder",
+            tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW,
+            renewAt: params.CREEP_RENEW_AT,
+            enforeMaxNoOfCreepReviewAtOnce: true,
+            overRideReviewAtOnceIfLiveLessThen: 300
+        },
+        {
+            roleName: "miner",
+            tickBeforeRenew: 1000,
+            renewAt: params.CREEP_RENEW_AT,
+            enforeMaxNoOfCreepReviewAtOnce: true,
+            overRideReviewAtOnceIfLiveLessThen: 300
+        },
+        {
+            roleName: "carrier",
+            tickBeforeRenew: params.CREEP_TICKS_BETWEEN_REVIEW,
+            renewAt: params.CREEP_RENEW_AT,
+            enforeMaxNoOfCreepReviewAtOnce: true,
+            overRideReviewAtOnceIfLiveLessThen: 300
+        },
+        {
+            roleName: "LongRangeHarvester",
+            tickBeforeRenew: 1000,
+            renewAt: 700,
+            enforeMaxNoOfCreepReviewAtOnce: false,
+            overRideReviewAtOnceIfLiveLessThen: 300
+        },
     ];
 
     /**
@@ -101,16 +137,18 @@ module.exports = function () {
         if (params.ALLOW_CREEP_RENEWING
             && this.room.noOfCreeps > 1
             && this.memory.AllowRenewing != false
-            && ((this.ticksToLive < params.CREEP_RENEW_AT)
+            && ((this.ticksToLive < this.getRole().renewAt)
                 || (this.memory.renewing && this.ticksToLive < params.CREEP_RENEW_UPTO)
                 ) ) {
 
             /* Max number of creeps allowed to renew
             */
             if (this.memory.renewing == false
-                && _.sum(this.room.creeps, (c) => c.memory.renewing == true) >= (params.CREEP_RENEW_AT_SAME_TIME - 1))
+                && (this.getRole().enforeMaxNoOfCreepReviewAtOnce == false || _.sum(this.room.creeps, (c) => c.memory.renewing == true) >= (params.CREEP_RENEW_AT_SAME_TIME - 1)))
             {
                 // TODo LongRangeHarvester must not go if cant make it this.getRole().roleName == ""LongRangeHarvester"
+
+                
                 this.memory.tickBeforeRenew = 5; // try again later
                 return false;
             }
@@ -195,8 +233,14 @@ module.exports = function () {
         } else if (havevestIsNone == true) {
             /* eught should happen 
             */
-            this.harvestSource();
+            if (this.harvestSource()) { return };
         }
+
+        /* Out of Energy in room
+        */
+        this.moveTo(Game.flags.W7N3_WaitForEnergy);
+
+        //W7N3_WaitForEnergy()
 
     }
 
@@ -241,9 +285,16 @@ module.exports = function () {
             this.memory.task = "harvesting from new source" + source.id;
         }
         
-
-        if (this.harvest(source) == ERR_NOT_IN_RANGE) {
+        var r = this.harvest(source);
+        if (r == ERR_NOT_IN_RANGE) {
             this.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } });
+            return true;
+        } else if (r == OK) {
+            return true;
+        } else if (r == ERR_NOT_ENOUGH_RESOURCES) {
+            return false;
+        } else {
+            console.log( r + ' - harvest failed')
         }
 
     }

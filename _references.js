@@ -50,4 +50,3 @@
 /// <reference path="ScreepsAutocomplete-master/Structures/StructureTower.js" />
 /// <reference path="ScreepsAutocomplete-master/Structures/StructureWall.js" />
 /// <reference path="ScreepsAutocomplete-master/Tombstone.js" />
-/// <reference path="tut.js" />

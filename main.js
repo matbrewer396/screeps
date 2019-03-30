@@ -63,8 +63,10 @@ module.exports.loop = function () {
 function longRangeTarget() {
     //TODO: Auto pick these
     var longRangeTargets = [
-        { sourceId: "70100773019e434", roomName: "W6N3", noOfCreeps: 3, carryPartForWork: 3, spawn: 'Spawn1' },
-        { sourceId: "7cf80773019b1f1", roomName: "W6N3", noOfCreeps: 3, carryPartForWork: 3, spawn: 'Spawn1' }
+        { sourceId: "70100773019e434", roomName: "W6N3", noOfCreeps: 3, carryPartForWork: 3, spawn: 'Spawn1' }, // vis swapm - only one sort
+        { sourceId: "7cf80773019b1f1", roomName: "W6N3", noOfCreeps: 5, carryPartForWork: 3, spawn: 'Spawn1' },
+        { sourceId: "80d207728e6597b", roomName: "W7N4", noOfCreeps: 3, carryPartForWork: 3, spawn: 'Spawn1' },
+        { sourceId: "c44207728e621fc", roomName: "W7N4", noOfCreeps: 6, carryPartForWork: 3, spawn: 'Spawn1' },
     ];
 
     /* Process target
