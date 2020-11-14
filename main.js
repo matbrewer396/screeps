@@ -47,8 +47,8 @@ module.exports.loop = function () {
 
         
     }
-
-    longRangeTarget()
+    //todo working if spwan has already been given a creep to greate
+  //  longRangeTarget()
     
     
     

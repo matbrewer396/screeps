@@ -65,10 +65,10 @@ module.exports = function () {
      * Summary. Process creep
      */
     Creep.prototype.run = function () {
-        this.memory.task = "...";
+        this.log("Run() Called");
 
         if (this.memory.currentRole == null){
-            console.log("roles is null")
+            this.log("roles is null");
             this.memory.currentRole = this.memory.role
         }
 
@@ -78,6 +78,7 @@ module.exports = function () {
         if (this.memory.tickBeforeRenew == null) {
             this.memory.tickBeforeRenew = this.getRole().tickBeforeRenew;
         } else if (this.memory.tickBeforeRenew == 0) {
+            this.log("Renewing");
             if(this.review()) { return };
         } else {
             this.memory.tickBeforeRenew -= 1;
@@ -392,6 +393,20 @@ module.exports = function () {
         return this.review();
     }
 
+
+
+   /**
+   * Summary.  Called when task completed
+   * @return boolean - ture in home room, false moving
+   */
+    Creep.prototype.log = function (note) {
+
+        if (this.name == "LONG_HARVESTER_4214") {
+            console.log(this.name + ' - ' + this.room.name + ' - '+ note)
+        }
+
+        return this.review();
+    }
     
 
 }
