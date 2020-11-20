@@ -34,6 +34,11 @@ var roleMiner = {
             creep.memory.task = "mineing existing source";
             myContainer = Game.getObjectById(creep.memory.minerContrainer);
 
+            if (myContainer == undefined) {
+                creep.log("conatiner doesnt exists", LogLevel.INFO);
+                creep.memory.minerContrainer = null;
+            }
+
             if(creep.pos.getRangeTo(myContainer ) == 0) {
                 creep.log("harvesting", LogLevel.DEBUG);
                 creep.harvest(creep.pos.findClosestByPath(FIND_SOURCES))
@@ -41,18 +46,7 @@ var roleMiner = {
                 creep.log("moving", LogLevel.DEBUG);
                 console.log(creep.name + 'move ' + creep.moveTo(Game.getObjectById(creep.memory.minerContrainer)));
             }
-            
-            // if (myContainer.progress < 100){
-            //     creep.buildIt(myContainer);
-            // } else {
-            //     if(creep.pos.getRangeTo(myContainer ) == 0) {
-            //         creep.log("harvesting", LogLevel.DEBUG);
-            //         creep.harvest(creep.pos.findClosestByPath(FIND_SOURCES))
-            //     } else {
-            //         creep.log("moving", LogLevel.DEBUG);
-            //         console.log(creep.name + 'move ' + creep.moveTo(Game.getObjectById(creep.memory.minerContrainer)));
-            //     }
-            // }
+           
         }
         
     }

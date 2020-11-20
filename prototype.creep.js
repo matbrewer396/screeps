@@ -1,5 +1,5 @@
 // var roleHarvester = require('role.harvester');
-// var roleUpgrader = require('role.upgrader');
+var roleUpgrader = require('role.upgrader');
 // var roleBuilder = require('role.builder');
 var roleMiner = require('role.miner');
 var roleWorker = require('role.worker');
@@ -34,7 +34,9 @@ module.exports = function () {
         /* Review Creep
         */
         //console.log("mem " + this.memory.tickBeforeRenew);
+        this.log("tickBeforeRenew " + this.memory.tickBeforeRenew ,LogLevel.DEBUG);
         if (this.memory.tickBeforeRenew == null) {
+            this.log("tickBeforeRenew role " + this.getRole().tickBeforeRenew ,LogLevel.DEBUG);
             this.memory.tickBeforeRenew = this.getRole().tickBeforeRenew;
         } else if (this.memory.tickBeforeRenew == 0) {
             this.log("Eval Renewing",LogLevel.DEBUG);
@@ -51,6 +53,8 @@ module.exports = function () {
             roleMiner.run(this);
         } else if (this.memory.role == Role.CARRIER) {
             roleCarrier.run(this);
+        } else if(this.memory.role == Role.UPGRADER) {
+            roleUpgrader.run(this);
         }
 
 
@@ -161,10 +165,13 @@ module.exports = function () {
     Creep.prototype.collectEnergy = function (havevestIsNone) {
         this.log("collectEnergy - looking", LogLevel.DEBUG)
         // Already on route 
-        if (this.memory.useSource != null) {
+        if (this.memory.useSource != null && this.body.findIndex(b => b.type == "work") !== -1) {
+            this.log("useSource is set", LogLevel.DEBUG)
             this.harvestSource();
             return;
         }
+
+        
 
         /* Look for dropped items
         */
@@ -184,7 +191,10 @@ module.exports = function () {
         */
         var container = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
-                return (structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > this.store.getFreeCapacity(RESOURCE_ENERGY) );
+                return (structure.structureType == STRUCTURE_CONTAINER 
+                        && structure.store[RESOURCE_ENERGY] > this.store.getFreeCapacity(RESOURCE_ENERGY)
+                        && structure !== this.room.controllerContainer
+                    );
             }
         });
 
@@ -204,7 +214,7 @@ module.exports = function () {
             }
             return;
         }
-         else if (havevestIsNone == true) {
+         else if (havevestIsNone == true && this.body.findIndex(b => b.type == "work") !== -1) {
             /* eught should happen 
             */
             if (this.harvestSource()) { return };
@@ -284,7 +294,9 @@ module.exports = function () {
         /* Find existing target
         */
         target = Game.getObjectById(this.memory.workerTarget);
-        if (target && target.energy && target.energy == target.energyCapacity) { // is still valid?
+        this.log("Drop off target (old) " +target + ';', LogLevel.DEBUG)
+        if (target !== null && target.store.getFreeCapacity(RESOURCE_ENERGY) == 0) { // is still valid?
+            //target.store.getFreeCapacity(RESOURCE_ENERGY) == 0
             target = null;
             this.memory.workerTarget = null
             this.taskCompleted();
@@ -295,7 +307,7 @@ module.exports = function () {
         if (target == null) {
             target = this.room.getEnergyDropTarget(this.pos);
         };
-
+        //this.log("Drop off target" +target + '; Free: ' + target.store.getFreeCapacity(RESOURCE_ENERGY), LogLevel.DEBUG)
         if (target == null) {
             return false;
         }
