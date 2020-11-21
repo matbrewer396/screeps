@@ -1,13 +1,12 @@
-var params = require('params');
-const LogLevel = params.LogLevel;
-const Tasks = params.CreepTasks;
+
+var myConfig = config.Roles.filter(function (r) { return r.roleName == Role.MINER })[0]
 var roleMiner = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
         creep.memory.task = "Miner";
         if (creep.memory.minerSource == null || creep.memory.minerContrainer == null) {
-            creep.memory.task = Tasks.FIND_SOURCE;
+            creep.memory.task = CreepTasks.FIND_SOURCE;
             /* find container for source
             */
             var containers = creep.room.find(FIND_STRUCTURES, {
@@ -41,14 +40,33 @@ var roleMiner = {
 
             if(creep.pos.getRangeTo(myContainer ) == 0) {
                 creep.log("harvesting", LogLevel.DEBUG);
-                creep.harvest(creep.pos.findClosestByPath(FIND_SOURCES))
+                let r = creep.harvest(creep.pos.findClosestByPath(FIND_SOURCES))
+                creep.log("harvesting outcome: " + r, LogLevel.DEBUG);
             } else {
                 creep.log("moving", LogLevel.DEBUG);
-                console.log(creep.name + 'move ' + creep.moveTo(Game.getObjectById(creep.memory.minerContrainer)));
+                creep.log(creep.name + 'move ' + creep.moveTo(Game.getObjectById(creep.memory.minerContrainer)));
             }
            
         }
         
+    },
+    spawnData: function(room) {
+        let name = getNewCreepName("MINER");
+        let body = [];
+        let memory = {
+            role: Role.MINER,
+            myRoom: room.name
+        };
+        let energyAvailable = room.energyAvailable - 50;
+        body.push(MOVE)
+        if (myConfig.maxbodyCost -50 <= energyAvailable) {
+            energyAvailable = myConfig.maxbodyCost -50
+        }
+        
+        body = fnBuildBody(body, [WORK],energyAvailable);
+        room.log("Spwaming new workder - " + name + ' body: ' + body.toString(),LogLevel.DEBUG);
+        return {name, body, memory};
+    
     }
 };
 

@@ -2,45 +2,9 @@
 const Role = params.Role;
 const LogLevel = params.LogLevel;
 ﻿module.exports = function () {
-    StructureSpawn.prototype.log = function (msg, LogLevel) {
-        if (params.LOG_SPAWN_LEVEL >= LogLevel) {
-            console.log("Spawn:" + this.name + "; Msg: " + msg);
-        }
-    }
 
-    // create a new function for StructureSpawn
-    StructureSpawn.prototype.createCreepWorker = function (creepNamePrefix, roleName) {
-        var maxSize = this.room.energyAvailable;
-        var noParts = Math.floor(maxSize / 200);
-        var body = [];
-        console.log(this.room.energyAvailable);
-        console.log(maxSize)
-        console.log(noParts)
-        for (let i = 0; i < noParts; i++) {
-            body.push(WORK);
-            body.push(CARRY);
-            body.push(MOVE);
-        }
-        var remainder = (maxSize - noParts * 200)
-        console.log(remainder)
-        noParts = Math.floor(remainder / 50)
-        console.log(noParts)
-        var nextPart = MOVE;
 
-        for (let i = 0; i < noParts; i++) {
-            body.push(nextPart);
-                
-            if (nextPart == CARRY) {
-                nextPart = MOVE;
-            } else {
-                nextPart = CARRY;
-            }
-
-        }
-        var name = this.getNameName(creepNamePrefix);
-        this.log("Spwaming new workder - " + name + ' body: ' + body.toString(),LogLevel.DEBUG);
-        return this.createCreep(body, name, { role: roleName });
-    };
+        
 
     StructureSpawn.prototype.createCreepMiner = function (creepNamePrefix, roleName) {
         this.log("Spwaming new miner",LogLevel.DEBUG)
@@ -155,14 +119,5 @@ const LogLevel = params.LogLevel;
     /**
      * Summary. get unused name
      */
-    StructureSpawn.prototype.getNameName = function (creepNamePrefix) {
-        /* Get name
-        */
-        do {
-            var name = Math.floor(Math.random() * 8999) + 1000;
-            name = creepNamePrefix + '_' + name;
-        } while (_.sum(this.room.creeps, (c) => c.name == name) !== 0);
-
-        return name;
-    };
+    
 };

@@ -1,7 +1,5 @@
 
-require('prototype.room')();
-require('prototype.StructureSpawn')();
-require('prototype.creep')();
+require('require');
 const LogLevel = {NOTHING: 0,INFO: 1, DEBUG: 2}
 
 module.exports.loop = function () {
@@ -21,8 +19,8 @@ function processRooms() {
         room.startUp();
         /* process creeps
         */
-        for (var name in room.creeps) {
-            room.creeps[name].run();
+        for (var name in room.find(FIND_MY_CREEPS)) {
+            room.find(FIND_MY_CREEPS)[name].run();
         }
 
         // var towers = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
