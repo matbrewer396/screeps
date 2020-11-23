@@ -30,16 +30,16 @@ Creep.prototype.run = function () {
 
     /* Review Creep
     */
-    //console.log("mem " + this.memory.tickBeforeRenew);
-    this.log("tickBeforeRenew " + this.memory.tickBeforeRenew ,LogLevel.DEBUG);
-    if (this.memory.tickBeforeRenew == null) {
-        this.log("tickBeforeRenew role " + this.getRoleConfig().tickBeforeRenew ,LogLevel.DEBUG);
-        this.memory.tickBeforeRenew = this.getRoleConfig().tickBeforeRenew;
-    } else if (this.memory.tickBeforeRenew == 0) {
+    //console.log("mem " + this.memory.tickBeforeReview);
+    this.log("tickBeforeReview " + this.memory.tickBeforeReview ,LogLevel.DEBUG);
+    if (this.memory.tickBeforeReview == null) {
+        this.log("tickBeforeReview role " + this.getRoleConfig().tickBeforeReview ,LogLevel.DEBUG);
+        this.memory.tickBeforeReview = this.getRoleConfig().tickBeforeReview;
+    } else if (this.memory.tickBeforeReview == 0) {
         this.log("Eval Renewing",LogLevel.DEBUG);
         if(this.review()) { return };
     } else {
-        this.memory.tickBeforeRenew -= 1;
+        this.memory.tickBeforeReview -= 1;
     }
     
     /* Find what to do
@@ -63,9 +63,11 @@ Creep.prototype.run = function () {
  * Summary. Review creep should recycle or repair
  */
 Creep.prototype.review = function () {
+    this.log("Reviewing Creep", LogLevel.INFO);
+
     /* Is old Model?
     */
-    //roles[this.memory.role].tickBeforeRenew
+    //roles[this.memory.role].tickBeforeReview
     bodyCode = this.getBodyCost();
     var maxBodySize = Game.rooms[Memory.primaryRoom].energyCapacityAvailable
 
@@ -83,24 +85,35 @@ Creep.prototype.review = function () {
         this.memory.AllowRenewing = true;
     }
 
+    this.log("AllowRenewing: " + this.memory.AllowRenewing 
+        + '; ConfigAllow: ' + config.Creep.Renew.Allow
+        + '; ticksToLive: ' + this.ticksToLive
+        + '; noOfCreep: ' + this.room.find(FIND_MY_CREEPS).length
+        + '; renewing: ' + this.memory.renewing
+        
+        ,
+        LogLevel.DEBUG
+    )
+
     /* Deal with renewing
     */
     if (config.Creep.Renew.Allow
-        && this.room.noOfCreeps > 1
         && this.memory.AllowRenewing != false
+        && this.room.find(FIND_MY_CREEPS).length > 1
         && ((this.ticksToLive < this.getRoleConfig().renewAt)
             || (this.memory.renewing && this.ticksToLive < config.Creep.Renew.UpTo)
             ) ) {
-
+        
+        this.log("Renew creep",LogLevel.DEBUG );
         /* Max number of creeps allowed to renew
         */
         if (this.memory.renewing == false
-            && (this.getRoleConfig().enforeMaxNoOfCreepReviewAtOnce == false || _.sum(this.room.find(FIND_MY_CREEPS), (c) => c.memory.renewing == true) >= (config.Creep.Renew.AtSameTime - 1)))
+            && (this.getRoleConfig().enforeMaxNoOfCreepReviewAtOnce == false || 
+            _.sum(this.room.find(FIND_MY_CREEPS), (c) => c.memory.renewing == true) >= (config.Creep.Renew.AtSameTime)))
         {
+            this.log("Creep already rewnewing",LogLevel.INFO );
             // TODo LongRangeHarvester must not go if cant make it this.getRoleConfig().roleName == ""LongRangeHarvester"
-
-            
-            this.memory.tickBeforeRenew = 5; // try again later
+            this.memory.tickBeforeReview = 5; // try again later
             return false;
         }
         
@@ -109,14 +122,37 @@ Creep.prototype.review = function () {
         var spawn = this.room.find(FIND_MY_SPAWNS)[0];
         var r = spawn.renewCreep(this);
         this.log("Renewing outcome - " + r, LogLevel.INFO)
-        if (r == ERR_NOT_IN_RANGE) {
+        if (r == OK) {
+            return true;
+        } else if (r == ERR_NOT_IN_RANGE) {
             this.setTask(CreepTasks.RENEWING_MOVING_TO_SPAWN);
             this.moveTo(spawn);
             return true;
         } else if (r == ERR_FULL) {
             this.memory.renewing = false;
-            this.memory.tickBeforeRenew = this.getRoleConfig().tickBeforeRenew;
+            this.memory.tickBeforeReview = this.getRoleConfig().tickBeforeReview;
             this.log("Renewal complete", LogLevel.INFO)
+            return false;
+        } else if (r == ERR_NOT_ENOUGH_ENERGY) {
+            if (this.store[RESOURCE_ENERGY] > 0) {
+                this.transfer(spawn, RESOURCE_ENERGY)
+                return true;
+            }
+
+
+            let retryIn = config.Creep.Renew.TickBeforeRetry
+            if (this.ticksToLive < retryIn){
+                if (this.ticksToLive < config.Creep.Renew.LastHopeProtocol) {
+                    var r = spawn.recycleCreep(this);
+                    this.log("Recycling as last hoper outcome: " + r, LogLevel.ERROR)
+                    return
+                } else {
+                    retryIn = this.ticksToLive
+                }
+            }
+            this.memory.renewing = false;
+            this.memory.tickBeforeReview = retryIn;
+            this.log("Spawn out of e", LogLevel.INFO)
             return false;
         }
     } else if (this.memory.recycle) {
@@ -131,8 +167,9 @@ Creep.prototype.review = function () {
         }
         return true;
     } else {
+        this.log("Renew - nothing",LogLevel.DEBUG );
         this.memory.renewing = false
-        this.memory.tickBeforeRenew = this.getRoleConfig().tickBeforeRenew;
+        this.memory.tickBeforeReview = this.getRoleConfig().tickBeforeReview;
         return false;
     }
 }
@@ -140,6 +177,7 @@ Creep.prototype.review = function () {
 
 Creep.prototype.collectEnergy = function (havevestIsNone) {
     this.log("collectEnergy - looking", LogLevel.DEBUG)
+    this.memory.workerTarget = null;
     // Already on route 
     if (this.memory.useSource != null && this.body.findIndex(b => b.type == "work") !== -1) {
         this.log("useSource is set", LogLevel.DEBUG)
@@ -163,22 +201,44 @@ Creep.prototype.collectEnergy = function (havevestIsNone) {
         return;
     }
 
-    /* head to container
-    */
-    var container = this.pos.findClosestByRange(FIND_STRUCTURES, {
-        filter: (structure) => {
-            return (structure.structureType == STRUCTURE_CONTAINER 
-                    && structure.store[RESOURCE_ENERGY] > this.store.getFreeCapacity(RESOURCE_ENERGY)
-                    && structure !== this.room.controllerContainer
-                );
-        }
+
+    let container;
+    container = this.pos.findClosestByRange(FIND_TOMBSTONES, {
+        filter: (d) => {return (d.store[RESOURCE_ENERGY] > 0)}
     });
 
-    if (container == null) {
+    /* head to container
+    */
+    if (!container){
+        container = this.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_CONTAINER 
+                        && ( structure.store[RESOURCE_ENERGY] > this.store.getFreeCapacity(RESOURCE_ENERGY) // has more e and creep cap
+                            || structure.store[RESOURCE_ENERGY]  > 200 )
+                        && Game.rooms[this.pos.roomName].controllerContainers().filter(function (r) { return r.id == structure.id}).length == 0
+                    );
+            }
+        });
+    }
+    
+
+    this.log("CE; container: " + container, LogLevel.DEBUG)
+
+    if(!container && this.memory.role ==  Role.CARRIER) {
+        container = this.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: (structure) => {
+                return (structure.structureType == STRUCTURE_STORAGE 
+                    && structure.store[RESOURCE_ENERGY] > 0);
+            }
+        });
+    }
+
+    if (container == null && this.getRoleConfig.collectFromAnyConainter ) {
         
         container = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
-                return (structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > 0);
+                return (structure.structureType == STRUCTURE_CONTAINER 
+                    && structure.store[RESOURCE_ENERGY] > 0);
             }
         });
     };
@@ -192,11 +252,12 @@ Creep.prototype.collectEnergy = function (havevestIsNone) {
             this.log("move to container: " + r, LogLevel.DEBUG);
         }
         return;
-    }
-        else if (havevestIsNone == true && this.body.findIndex(b => b.type == "work") !== -1) {
+    } else if (havevestIsNone == true && this.body.findIndex(b => b.type == "work") !== -1) {
         /* eught should happen 
         */
         if (this.harvestSource()) { return };
+    } else { // Out of Energy in room
+        this.taskCompleted();
     }
 
     // /* Out of Energy in room
@@ -232,11 +293,12 @@ Creep.prototype.harvestSource = function (source) {
         source = sources[creep.memory.forceSource];
     } else if (this.memory.useSource != null) {
         source = Game.getObjectById(this.memory.useSource)
+        if (source.energy == 0 && source.ticksToRegeneration > config.Creep.Harvesting.Drained.WaitIfTickLessThen){
+            FindNewSource(this);
+        }
         //  this.memory.task = "harvesting from " + source.id;
     } else {
-        var sources = this.room.find(FIND_SOURCES);
-        source = sources[_.random(0, sources.length-1)]
-        this.memory.useSource = source.id;
+        FindNewSource(this);
         // this.memory.task = "harvesting from new source" + source.id;
     }
     
@@ -254,6 +316,18 @@ Creep.prototype.harvestSource = function (source) {
 
 }
 
+function FindNewSource(creep){
+    var sources = creep.room.find(FIND_SOURCES,{ filter: (s) => s.energy > 0 });
+    if (sources.length == 0 ){
+        creep.log("New sources with energy", LogLevel.DEBUG);
+    } else {
+        source = sources[_.random(0, sources.length-1)]
+        creep.memory.useSource = source.id;
+    }
+    
+    
+}
+
 //     /**
 //      * Summary. dropOffEnergy at room target
 //      * @return boolean 
@@ -263,9 +337,12 @@ Creep.prototype.dropOffEnergy = function () {
     /* Find existing target
     */
     target = Game.getObjectById(this.memory.workerTarget);
-    this.log("Drop off target (old) " +target + ';', LogLevel.DEBUG)
-    if (target !== null && target.store && target.store.getFreeCapacity(RESOURCE_ENERGY) == 0) { // is still valid?
-        //target.store.getFreeCapacity(RESOURCE_ENERGY) == 0
+    this.log("DE; Drop off target (old) " +target + ';', LogLevel.DEBUG)
+  
+    if ( (target && target.store && (target.store.getFreeCapacity(RESOURCE_ENERGY) == 0 || this.room.controllerContainers().filter(function (r) { return r.id == target.id}).length > 0))
+        || (target && !target.store) // target doesnt have store
+    ) { // is still valid?
+        this.log("DE; Target no longer valid " +target + ';', LogLevel.DEBUG)
         target = null;
         this.memory.workerTarget = null
         this.taskCompleted();
@@ -274,7 +351,8 @@ Creep.prototype.dropOffEnergy = function () {
     /* get new target
     */
     if (target == null) {
-        target = this.room.getEnergyDropTarget(this.pos);
+        target = this.pos.getEnergyDropTarget();
+        this.log("DE; pos.getEnergyDropTarget: " +target + ';', LogLevel.DEBUG)
     };
     //this.log("Drop off target" +target + '; Free: ' + target.store.getFreeCapacity(RESOURCE_ENERGY), LogLevel.DEBUG)
     if (target == null) {
@@ -285,9 +363,16 @@ Creep.prototype.dropOffEnergy = function () {
     this.setTask(CreepTasks.DROPOFF_ENERGY);
     
     var r = this.transfer(target, RESOURCE_ENERGY)
-    if (r == ERR_NOT_IN_RANGE) {
+    if (r == OK){
+        this.log("Transferred", LogLevel.DEBUG)
+    }
+    else if (r == ERR_NOT_IN_RANGE) {
         this.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });
-    } 
+    } else { // target not valid
+        this.log("Target not valid. Outcome: " + r + '; Target: ' + target, LogLevel.ERROR)
+        this.memory.workerTarget = null;
+        this.taskCompleted()
+    }
     return true;
 }
 
@@ -373,4 +458,9 @@ Creep.prototype.buildIt = function (target) {
     if(r == ERR_NOT_IN_RANGE) {
         this.moveTo(target, {visualizePathStyle: {stroke: '#ffffff'}});
     }
+}
+
+
+Creep.prototype.isInjured = function () {
+    return this.hitsMax > this.hits
 }

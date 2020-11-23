@@ -17,31 +17,24 @@ Room.prototype.isPrimaryRoom = function () {
 }
 
 
-
-
-
-
-
-
-/* Return the container next to controller
-*/
-Room.prototype.controllerContainer = function () {
-    var container = Game.getObjectById(this.memory.controllerContainer);
+Room.prototype.controllerContainers = function () {
+    return this.controller.pos.getContainersRightNextTo();
+    // var container = Game.getObjectById(this.memory.controllerContainers);
     
-    if (container !== null){
-        this.log("By memory" + container, LogLevel.DETAILED);
-        return container;
-    }
+    // if (container !== null){
+    //     this.log("By memory" + container, LogLevel.DETAILED);
+    //     return container;
+    // }
     
-    container = this.controller.pos.getContainerRightNextTo();
-    this.log("By findContainerRightNextTo" + container, LogLevel.DEBUG);
-    if (!container) {
-        return ({id:-1});
-    } else {
-        this.log("site: " + container, LogLevel.DEBUG);
-        this.memory.controllerContainer = container.id;
-        return container;
-    }
+    // container = this.controller.pos.getContainerRightNextTo();
+    // this.log("By findContainerRightNextTo" + container, LogLevel.DEBUG);
+    // if (!container) {
+    //     return ({id:-1});
+    // } else {
+    //     this.log("site: " + container, LogLevel.DEBUG);
+    //     this.memory.controllerContainer = container.id;
+    //     return container;
+    // }
 }
 
 
@@ -52,8 +45,7 @@ Room.prototype.getEnergyDropTarget = function (pos) {
             filter: (structure) => {
                 return (structure.structureType == STRUCTURE_EXTENSION ||
                         structure.structureType == STRUCTURE_SPAWN ||
-                        structure.structureType == STRUCTURE_TOWER ||
-                        (structure.structureType == STRUCTURE_CONTAINER && structure.id == this.controllerContainer().id)
+                        structure.structureType == STRUCTURE_TOWER
                         ) && structure.store !== undefined && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
             }
         });
@@ -107,9 +99,7 @@ Room.prototype.buildPath = function (posA,posB) {
     return path
 }
 
-Room.prototype.creepsInRole = function (role) {
-    return _.sum(this.find(FIND_MY_CREEPS), (c) => c.memory.role == role)
-}
+
 
 
 
@@ -126,28 +116,64 @@ Room.prototype.roomStage = function () {
 
     let stage = RoomStage.CAMP;
 
-    let extenstions = this.find(FIND_STRUCTURES, {
+    let extensions = this.find(FIND_STRUCTURES, {
         filter: (structure) => {
             return structure.structureType == STRUCTURE_EXTENSION;
         }
     });
 
-    /* Baseillys
+    var towers = this.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
+
+    /* OUTPOST
     */
     if (stage >= RoomStage.CAMP
-        && extenstions.length >= 5 
+        && extensions.length >= 5 
         && this.controller.level >= 2 
         && this.creepsInRole(Role.CARRIER) >= 2
-        && this.creepsInRole(Role.WORKER)  >= 4 
+        && this.creepsInRole(Role.WORKER)  >= 2 
+        && this.creepsInRole(Role.MINER)  >= 2
     ){
         stage = RoomStage.OUTPOST
     }
+    /* SETTLEMENT
+    */
+    if (stage >= RoomStage.OUTPOST
+        && towers.length > 1) {
+        stage = RoomStage.SETTLEMENT
+    }
 
     this.memory.currentStage = stage;
-    this.log("Stage: "  + stage, LogLevel.ALWAYS)
-    this.setTaskToRenew("roomStage", config.Room.Stages.RenewEvery)
+    if (stage !== currentStage){
+        this.log("New Stage: "  + stage + "; OldStage: " + currentStage, LogLevel.ALWAYS)
+    }
+    this.setTaskToRenew("roomStage", config.Room.Stages.ReviewEvery)
     return stage;
+}
+
+Room.prototype.isUnderAttack = function () {
+    return _.sum(this.find(FIND_HOSTILE_CREEPS)) !==0 
 }
 
 
 
+// Room.prototype.hasExist = function (d) {
+//     let f;
+//     switch (d) {
+//         case Direction.NORTH:
+//             f = FIND_EXIT_TOP;
+//             break;
+//         case Direction.WEST:
+//             f = FIND_EXIT_RIGHT;
+//             break;
+//         case Direction.EAST:
+//             f = FIND_EXIT_LEFT;
+//             break;
+//         case Direction.SOUTH:
+//             f = FIND_EXIT_BOTTOM;
+//             break;
+        
+//     }
+//     return (this.find(f).length > 0)
+
+
+// }

@@ -44,7 +44,7 @@ var roleMiner = {
                 creep.log("harvesting outcome: " + r, LogLevel.DEBUG);
             } else {
                 creep.log("moving", LogLevel.DEBUG);
-                creep.log(creep.name + 'move ' + creep.moveTo(Game.getObjectById(creep.memory.minerContrainer)));
+                creep.log(creep.name + 'move ' + creep.moveTo(Game.getObjectById(creep.memory.minerContrainer)), LogLevel.DEBUG);
             }
            
         }

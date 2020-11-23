@@ -8,19 +8,22 @@ global.config = {
     },
     LogOverRide: {
         Room: "",
-        Creep: "WORKER_6568",
+        Creep: "",
         StructureSpawn: "",
     },
 
-
-
-
-    
     Creep: {
         Renew: {
             Allow: true,
             UpTo: 3000,
-            AtSameTime: 1
+            AtSameTime: 1,
+            TickBeforeRetry: 60,
+            LastHopeProtocol: 10, // will recycle if less and this and no energy at swan 
+        },
+        Harvesting: {
+            Drained:{
+                WaitIfTickLessThen: 20
+            }
         },
     },
 
@@ -32,60 +35,61 @@ global.config = {
     Roles: [
         {
             roleName: "harvester",
-            tickBeforeRenew: 60,
+            tickBeforeReview: 60,
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300
         },
         {
             roleName: "upgrader",
-            tickBeforeRenew: 60,
+            tickBeforeReview: 60,
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300
         },
         {
             roleName: "builder",
-            tickBeforeRenew: 60,
+            tickBeforeReview: 60,
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300
         },
         {
             roleName: "miner",
-            tickBeforeRenew: 100,
+            tickBeforeReview: 100,
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
-            maxbodyCost: 1050 // 10 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
+            maxbodyCost: 1050, // 10 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
+            autoSpawn: 1
         },
         {
             roleName: "carrier",
-            tickBeforeRenew: 60,
-            renewAt: 500,
+            tickBeforeReview: 60,
+            renewAt: 600,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
             autoSpawn: 2
         },
         {
             roleName: "LongRangeHarvester",
-            tickBeforeRenew: 1000,
+            tickBeforeReview: 1000,
             renewAt: 700,
             enforeMaxNoOfCreepReviewAtOnce: false,
             overRideReviewAtOnceIfLiveLessThen: 300
         },
         {
             roleName: "worker",
-            tickBeforeRenew: 60,
+            tickBeforeReview: 60,
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
             repairStructuresAtHealthPercentage: 90, // Repair at this percetage
-            autoSpawn: 6
+            autoSpawn: 4
         },
         {
             roleName: "upgrader",
-            tickBeforeRenew: 100,
+            tickBeforeReview: 100,
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: false,
             overRideReviewAtOnceIfLiveLessThen: 300
@@ -93,16 +97,16 @@ global.config = {
     ],
 
     RoadNetwork: {
-        RenewEvery: 1000
+        ReviewEvery: 1000
     },
     Sources: {
-        RenewEvery: 1000,
-        RenewEveryOnFailure: 100,
+        ReviewEvery: 1000,
+        ReviewEveryOnFailure: 100,
     },
 
     Room: {
         Stages: {
-            RenewEvery: 100
+            ReviewEvery: 100
         },
         Spawning:{
             Allow: true,
@@ -110,13 +114,23 @@ global.config = {
         Tasks: [
             {
                 Function: "roadNetwork",
-                RenewEvery: 1000,
-                RenewEveryOnFailure: 100,
+                ReviewEvery: 1000,
+                ReviewEveryOnFailure: 100,
             },
             {
                 Function: "buildSourceContainer",
-                RenewEvery: 20,
-                RenewEveryOnFailure: 10,
+                ReviewEvery: 200,
+                ReviewEveryOnFailure: 10,
+            },
+            {
+                Function: "buildControllerContainer",
+                ReviewEvery: 200,
+                ReviewEveryOnFailure: 10,
+            },
+            {
+                Function: "checkCreepForControllerContainer",
+                ReviewEvery: 200,
+                ReviewEveryOnFailure: 10,
             },
         ]
     }

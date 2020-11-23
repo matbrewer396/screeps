@@ -1,6 +1,6 @@
 
 global.LogLevel = {ERROR: -2, ALWAYS: -1, NOTHING: 0,INFO: 1, DEBUG: 2, DETAILED: 3}
-global.Role = {WORKER: 'worker', MINER: 'miner', CARRIER: "carrier", UPGRADER: "upgrader"};
+global.Role = {WORKER: 'worker', MINER: 'miner', CARRIER: "carrier", UPGRADER: "upgrader", RECON: "recon"};
 
 global.CreepTasks = {
     //
@@ -36,4 +36,11 @@ global.RoomStage = {
     VILLAGE: 30,
     TOWN: 40,
     CITY: 50,
+}
+
+global.Direction = {
+    NORTH: "north",
+    SOUTH: "south",
+    WEST: "west",
+    EAST: "east",
 }

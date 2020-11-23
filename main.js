@@ -23,10 +23,10 @@ function processRooms() {
             room.find(FIND_MY_CREEPS)[name].run();
         }
 
-        // var towers = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
-        // for (var tower in towers) {
-        //     towers[tower].run();
-        // }
+        var towers = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
+        for (var tower in towers) {
+            towers[tower].run();
+        }
 
         // room.cleanUp();
 

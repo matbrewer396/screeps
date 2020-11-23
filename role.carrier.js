@@ -14,6 +14,8 @@ var roleCarrier = {
                 creep.collectEnergy(true);
                 return;
             }
+            // tod get from sour e
+            
             creep.log("nothing todo",LogLevel.INFO);
         }
 

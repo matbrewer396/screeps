@@ -14,8 +14,10 @@ var roleWorker = {
         var workerTarget = Game.getObjectById(creep.memory.workerTarget);
 
         if (!workerTarget || !creep.getTask()) {
-            if (creep.room.energyAvailable  !== creep.room.energyCapacityAvailable && creep.room.noOfCarrier == 0 ) {
-                creep.log("Room not at max call ", LogLevel.DEBUG);
+            if (creep.room.energyAvailable  !== creep.room.energyCapacityAvailable 
+                && (creep.room.creepsInRole(Role.CARRIER) == 0 || creep.room.creepsInRole(Role.MINER) == 0) ) {
+                creep.log("Room not at max energyCapacityAvailable and no minder or carriers ", LogLevel.DEBUG);
+                
                if (creep.dropOffEnergy()){
                    return;
                }
@@ -24,8 +26,9 @@ var roleWorker = {
         };
         /* Carrier mood
         */
-       if (creep.room.energyAvailable  !== creep.room.energyCapacityAvailable && creep.room.noOfCarrier < creep.room.noOfSources) {
-            creep.log("Room not at max call ", LogLevel.DEBUG);
+       if (creep.room.energyAvailable  !== creep.room.energyCapacityAvailable 
+            && creep.room.creepsInRole(Role.CARRIER) < creep.room.noOfSources) {
+            creep.log("Room not at max energyCapacityAvailable and not enough CARRIERs", LogLevel.DEBUG);
            if (creep.dropOffEnergy()){
                return;
            }
