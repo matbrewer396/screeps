@@ -22,3 +22,19 @@ Room.prototype.isTaskDueToStart = function (taskName) {
 Room.prototype.setTaskToRenew = function (taskName, ticksToReview) {
     this.memory.task[taskName] = ticksToReview;
 }
+
+Room.prototype.isRemoteSourceKnown = function (newSource) {
+    return ( this.memory.remoteSources.filter(function (s) {
+        return (s.x == newSource.x && s.y == newSource.y && s.roomName == newSource.roomName )
+       }).length > 0)
+}
+
+Room.prototype.addRemoteSource = function (newSource) {
+    let remoteBySources = this.memory.remoteSources;
+    if(!remoteBySources){
+        this.memory.remoteSources = [];
+    } else if(this.isRemoteSourceKnown(newSource)) {
+        return
+    }
+    this.memory.remoteSources.push(newSource);
+}

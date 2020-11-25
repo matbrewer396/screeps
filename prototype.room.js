@@ -68,21 +68,21 @@ Room.prototype.cleanUp =function () {
 };
 
 
-function buildPath(posA, posB, room) {
-    var path = posA.findPathTo(posB);
-    for (var i = 0; i < path.length; i++) 
-    {
-        room.log("Path: " + path[i].x + ' - ' + path[i].y, LogLevel.DETAILED)
+// function buildPath(posA, posB, room) {
+//     var path = posA.findPathTo(posB);
+//     for (var i = 0; i < path.length; i++) 
+//     {
+//         room.log("Path: " + path[i].x + ' - ' + path[i].y, LogLevel.DETAILED)
         
-        // room.log(path[i].x +' - ' + path[i].y + ' ' + path[i].look()[0].terrain, LogLevel.DETAILED)
-        // find site without walls
-        // if (possibleSite.look()[0].terrain == "plain"){
-        //     return (possibleSite);
-        // }
+//         // room.log(path[i].x +' - ' + path[i].y + ' ' + path[i].look()[0].terrain, LogLevel.DETAILED)
+//         // find site without walls
+//         // if (possibleSite.look()[0].terrain == "plain"){
+//         //     return (possibleSite);
+//         // }
 
-        room.createConstructionSite(path[i].x,path[i].y, STRUCTURE_ROAD);
-    }
-}
+//         room.createConstructionSite(path[i].x,path[i].y, STRUCTURE_ROAD);
+//     }
+// }
 
 Room.prototype.buildPath = function (posA,posB) {
 
@@ -91,9 +91,52 @@ Room.prototype.buildPath = function (posA,posB) {
           pos: posB,
           range: 1,
         }, {
-          maxRooms: 1,
-          swampCost: 0,
+          maxRooms: 10,
+          swampCost: 1,
           plainCost: 0,
+        //   roomCallback: function(roomName) {
+        //     console.log("hello")
+        //     let room = Game.rooms[roomName];
+        //     // In this example `room` will always exist, but since 
+        //     // PathFinder supports searches which span multiple rooms 
+        //     // you should be careful!
+        //     if (!room) return;
+        //     let costs = new PathFinder.CostMatrix;
+    
+        //     room.find(FIND_STRUCTURES).forEach(function(struct) {
+        //       if (struct.structureType === STRUCTURE_ROAD) {
+        //         // Favor roads over plain tiles
+        //         costs.set(struct.pos.x, struct.pos.y, 1);
+        //       } else if (struct.structureType !== STRUCTURE_CONTAINER &&
+        //                  (struct.structureType !== STRUCTURE_RAMPART ||
+        //                   !struct.my)) {
+        //         // Can't walk through non-walkable buildings
+        //         costs.set(struct.pos.x, struct.pos.y, 0xff);
+        //       }
+        //     });
+
+        //     // for(var y=0; y<50; y++) {
+        //     //     rows[y] = new Array(50);
+        //     //     for(var x=0; x<50; x++) {
+        //     //         rows[y][x] = x == 0 || y == 0 || x == 49 || y == 49 ? 11 : 2;
+        //     //         //var terrainCode = register.terrainByRoom.spatial[id][y][x];
+        //     //         var terrainCode = runtimeData.staticTerrainData[id][y*50+x];
+        //     //         if(terrainCode & C.TERRAIN_MASK_WALL) {
+        //     //             rows[y][x] = 0;
+        //     //         }
+        //     //         if ((terrainCode & C.TERRAIN_MASK_SWAMP) && rows[y][x] == 2) {
+        //     //             rows[y][x] = 10;
+        //     //         }
+        //     //     }
+        //     // }
+    
+        //     // // Avoid creeps in the room
+        //     // room.find(FIND_CREEPS).forEach(function(creep) {
+        //     //   costs.set(creep.pos.x, creep.pos.y, 0xff);
+        //     // });
+    
+        //     return costs;
+        //   }
         },
       );
     return path
@@ -151,7 +194,32 @@ Room.prototype.roomStage = function () {
 }
 
 Room.prototype.isUnderAttack = function () {
-    return _.sum(this.find(FIND_HOSTILE_CREEPS)) !==0 
+    return this.find(FIND_HOSTILE_CREEPS, {
+        filter: function (s) {
+            return !s.hits > 0
+        }
+    }).length !==0 
+}
+
+
+Room.prototype.withDrawLimit = function () {
+    return 50000
+}
+
+Room.prototype.getRangeBetweenPos = function (posA, posB) {
+    if (!Memory.pathCost){
+        Memory.pathCost = [];
+    }
+
+    let exiting = Memory.pathCost.filter(function(r){return r.posA == posA.toString() && r.posB == posB.toString()});
+    if (exiting.length > 0) {
+        return exiting[0].cost 
+    }
+
+    let ret = PathFinder.search(posA,posB)
+    let obj = { posA:posA.toString(), posB:posB.toString(), cost: ret.cost }
+    Memory.pathCost.push(obj)
+    return ret.cost;
 }
 
 
@@ -177,3 +245,20 @@ Room.prototype.isUnderAttack = function () {
 
 
 // }
+
+
+Room.prototype.isHealthy = function () {
+    if (this.creepsInRole(Role.CARRIER) < 1
+        || this.creepsInRole(Role.WORKER)  < 1 
+        || this.creepsInRole(Role.MINER)  < 1){
+        return false
+    } else {
+        return true
+    }
+    
+}
+
+// TODO should change with room stage
+Room.prototype.repairWallLess = function () {
+    return 10000
+}

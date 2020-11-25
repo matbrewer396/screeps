@@ -3,10 +3,10 @@ RoomPosition.prototype.getNearByPositions = function getNearByPositions() {
     let startX = this.x - 1 || 1;
     let startY = this.y - 1 || 1;
     var maxRoomPos = 49
-    for (x = startX; x <= this.x +1 && x < maxRoomPos; x++ ) {
-        for (y = startY; y <= this.y +1 && y < maxRoomPos; y++ ) {
-            if (!( x == this.x && y == this.y) ) {
-                positions.push(new RoomPosition(x,y, this.roomName));
+    for (x = startX; x <= this.x + 1 && x < maxRoomPos; x++) {
+        for (y = startY; y <= this.y + 1 && y < maxRoomPos; y++) {
+            if (!(x == this.x && y == this.y)) {
+                positions.push(new RoomPosition(x, y, this.roomName));
             }
         }
     }
@@ -17,9 +17,9 @@ RoomPosition.prototype.getNearByBuildablePositions = function getNearByBuildable
     let positions = this.getNearByPositions();
     let openPositions = [];
     const terrain = new Room.Terrain(positions[0].roomName);
-    for (i in positions){
+    for (i in positions) {
         let pos = positions[i];
-        if (terrain.get(pos.x,pos.y) !== TERRAIN_MASK_WALL) {
+        if (terrain.get(pos.x, pos.y) !== TERRAIN_MASK_WALL) {
             openPositions.push(pos)
         }
     };
@@ -31,26 +31,26 @@ RoomPosition.prototype.getNearByBuildablePositions = function getNearByBuildable
 RoomPosition.prototype.getContainerRightNextTo = function getContainerRightNextTo() {
     var container = this.findClosestByRange(FIND_STRUCTURES, {
         filter: (structure) => {
-            return (structure.structureType == STRUCTURE_CONTAINER );
+            return (structure.structureType == STRUCTURE_CONTAINER);
         }
     });
-    
-    if (this.getRangeTo(container) > 1){
+
+    if (this.getRangeTo(container) > 1) {
         container = null;
     } else {
-        return(container);
+        return (container);
     }
 
     container = this.findClosestByRange(FIND_CONSTRUCTION_SITES, {
         filter: (structure) => {
-            return (structure.structureType == STRUCTURE_CONTAINER );
+            return (structure.structureType == STRUCTURE_CONTAINER);
         }
     });
 
-    if (this.getRangeTo(container) > 1){
+    if (this.getRangeTo(container) > 1) {
         container = null;
     }
-    return(container);
+    return (container);
 };
 
 RoomPosition.prototype.getContainersRightNextTo = function getContainersRightNextTo() {
@@ -58,7 +58,7 @@ RoomPosition.prototype.getContainersRightNextTo = function getContainersRightNex
     let containers = [];
     for (i in nearBy) {
         if (nearBy[i].hasContainer()) {
-            containers.push(nearBy[i].look().filter(function (r) { 
+            containers.push(nearBy[i].look().filter(function (r) {
                 return r.type == "structure" && r.structure.structureType == STRUCTURE_CONTAINER
             })[0].structure);
         }
@@ -70,48 +70,42 @@ RoomPosition.prototype.getContainersRightNextTo = function getContainersRightNex
 RoomPosition.prototype.getEnergyDropTarget = function () {
     let target;
 
-    if (this.room().isUnderAttack){
+    /** full tower if under attack */
+    if (this.room().isUnderAttack()) {
         target = this.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
-                return (( structure.structureType == STRUCTURE_TOWER  && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200 )) ;
+                return ((structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200));
             }
         });
-        if (target){
+        if (target) {
             return target;
         }
-    }
-    
-    if (this.room().creepsInRole[Role.WORKER] < 3) {
+    } else if (!this.room().isHealthy()) {
         /* Get full up spawn get more creeps to help
         */
+        
+
         target = this.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
-                return ((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN ) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1)
-                        ||( structure.structureType == STRUCTURE_TOWER  && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200 ) ;
+                return ((structure.structureType == STRUCTURE_EXTENSION
+                    || structure.structureType == STRUCTURE_SPAWN
+
+                ) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1);
             }
         });
     } else {
         target = this.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
-                return ((structure.structureType == STRUCTURE_EXTENSION 
-                        || structure.structureType == STRUCTURE_SPAWN 
-                        
-                        ) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1);
+                return ((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1)
+                    || (structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200)
+                    || (Game.rooms[this.roomName].controllerContainers().filter(function (r) { return r.id == structure.id }).length == 1 && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 50)
+                    ;
             }
         });
-
-        if (!target){
-            target = this.findClosestByRange(FIND_STRUCTURES, {
-                filter: (structure) => {
-                    return ((structure.structureType == STRUCTURE_STORAGE 
-                            ) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1);
-                }
-            });
-        }
+        //&& Game.rooms[this.pos.roomName].controllerContainers().filter(function (r) { return r.id == structure.id }).length == 0
         
     }
-    
-    
+
 
 
 
@@ -119,27 +113,135 @@ RoomPosition.prototype.getEnergyDropTarget = function () {
         return target;
     }
     return this.findClosestByRange(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return ((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN ) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 1)
-                        || (structure.structureType == STRUCTURE_CONTAINER 
-                            && Game.rooms[this.roomName].controllerContainers().filter(function (r) { return r.id == structure.id}).length == 1
-                            && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 400 )
-                        ||( structure.structureType == STRUCTURE_TOWER  && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200 ) ;
-            }
-        });
+        filter: (structure) => {
+            return ((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN|| structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 1)
+                || (structure.structureType == STRUCTURE_CONTAINER && Game.rooms[this.roomName].controllerContainers().filter(function (r) { return r.id == structure.id }).length == 1
+                    && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 400)
+                || (structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200);
+        }
+    });
 
 }
 
-RoomPosition.prototype.room = function() {
+RoomPosition.prototype.getAdjacentPositions = function getAdjacentPositions() {
+    var positions = [];
+
+    positions.push(new RoomPosition(this.x - 1, this.y, this.roomName));
+    positions.push(new RoomPosition(this.x + 1, this.y, this.roomName));
+    positions.push(new RoomPosition(this.x, this.y + 1, this.roomName));
+    positions.push(new RoomPosition(this.x, this.y - 1, this.roomName));
+    return positions;
+}
+
+RoomPosition.prototype.room = function () {
     return Game.rooms[this.roomName]
 }
 
 
+RoomPosition.prototype.isNextToRoad = function () {
+    let isNextToRoad = false;
+    let adjacentPositions = this.getAdjacentPositions();
+    for (i in adjacentPositions) {
+        if (adjacentPositions[i].hasRoad()) {
+            return true;
+        }
+    }
+    return isNextToRoad;
+};
 
-RoomPosition.prototype.hasRoad = function() {
+
+RoomPosition.prototype.fnNoOfCreepsRequired = function () {
+    return 3;
+};
+
+
+
+
+
+RoomPosition.prototype.getAdjacentPositionsInDirection = function getAdjacentPositionsInDirection(direction, len) {
+    var positions = [];
+    let pos = this;
+    let x = 0;
+    let y = 0;
+
+    switch (direction) {
+        case Direction.NORTH:
+            y += 1; break;
+        case Direction.SOUTH:
+            y -= 1; break;
+        case Direction.EAST:
+            x += 1; break;
+        case Direction.WEST:
+            x -= 1; break;
+    }
+
+    while (len > 0) {
+        len -= 1;
+        pos = new RoomPosition(pos.x - x, pos.y - y, pos.roomName);
+        if (pos.isBuildable()) {
+            break;
+        }
+        positions.push(pos);
+        if (pos.isBoarder()) {
+            break;
+        }
+    }
+
+    return positions;
+}
+
+
+RoomPosition.prototype.findClosestStorage = function () {
+    this.findClosestByRange(FIND_STRUCTURES, {
+        filter: (structure) => {
+            return ((structure.structureType == STRUCTURE_STORAGE
+            ) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1);
+        }
+    });
+}
+
+
+
+RoomPosition.prototype.hasRoad = function () {
     return this.lookFor(LOOK_STRUCTURES).some((s) => s.structureType == STRUCTURE_ROAD);
 };
-RoomPosition.prototype.hasContainer = function() {
+RoomPosition.prototype.hasContainer = function () {
     return this.lookFor(LOOK_STRUCTURES).some((s) => s.structureType == STRUCTURE_CONTAINER);
 };
+RoomPosition.prototype.hasConstructionSite = function () {
+
+    return this.lookFor(LOOK_CONSTRUCTION_SITES).length > 0;
+};
+
+RoomPosition.prototype.hasStructure = function () {
+    return this.lookFor(LOOK_STRUCTURES).length > 0;
+};
+
+RoomPosition.prototype.toNorth = function () {
+    return new RoomPosition(this.x, this.y + 1, this.roomName);
+};
+
+RoomPosition.prototype.toSouth = function () {
+    return new RoomPosition(this.x, this.y - 1, this.roomName);
+};
+
+RoomPosition.prototype.toEast = function () {
+    return new RoomPosition(this.x + 1, this.y, this.roomName);
+};
+RoomPosition.prototype.toWest = function () {
+    return new RoomPosition(this.x - 1, this.y, this.roomName);
+};
+RoomPosition.prototype.isBuildable = function () {
+    return (this.lookFor(LOOK_TERRAIN)[0] === 'wall');
+};
+
+
+RoomPosition.prototype.isBoarder = function () {
+    return (this.x <= 1 || this.x >= 48 || this.y <= 1 || this.y >= 48);
+};
+
+
+// RoomPosition.prototype.toString = function() {
+//     return this.roomName + '-' + this.x + '-' + this.y;
+// };
 

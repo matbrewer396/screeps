@@ -3,6 +3,8 @@ let creepLogic = {
     miner: require('role.miner'),
     worker: require('role.worker'),
     carrier: require('role.carrier'),
+    harvester: require('role.harvester'),
+    guardian : require('role.guardian'),
 }
 
 module.exports = creepLogic;

@@ -8,7 +8,7 @@ global.config = {
     },
     LogOverRide: {
         Room: "",
-        Creep: "",
+        Creep: "", // MINER_3532
         StructureSpawn: "",
     },
 
@@ -25,6 +25,12 @@ global.config = {
                 WaitIfTickLessThen: 20
             }
         },
+        DropOff:{
+            LastWithDrawExpiry: 20
+        },
+        Debug:{
+            Visual:"fuchsia"
+        }
     },
 
 
@@ -35,32 +41,32 @@ global.config = {
     Roles: [
         {
             roleName: "harvester",
-            tickBeforeReview: 60,
+            tickBeforeReview: 600, // should every auto review
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: true,
-            overRideReviewAtOnceIfLiveLessThen: 300
+            overRideReviewAtOnceIfLiveLessThen: 300,
+            dropOffAtStorage: true,
+            dropOffAtUpgradeContainer: true,
+            pickUpDroppedInRange: 10,
+            harvestSourceWithInRange: 10, // this creep has to room pos and then finds sources within this range 
+            noSourcesReturnHomeLessThenFree: 100,
+            blockSpawnRetryLater: true,
+            upgradeIfStorageOver: 200000
         },
         {
             roleName: "upgrader",
             tickBeforeReview: 60,
-            renewAt: 500,
-            enforeMaxNoOfCreepReviewAtOnce: true,
-            overRideReviewAtOnceIfLiveLessThen: 300
-        },
-        {
-            roleName: "builder",
-            tickBeforeReview: 60,
-            renewAt: 500,
+            renewAt: 0,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300
         },
         {
             roleName: "miner",
             tickBeforeReview: 100,
-            renewAt: 500,
+            renewAt: 200,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
-            maxbodyCost: 1050, // 10 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
+            maxbodyCost: 650, // 6 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
             autoSpawn: 1
         },
         {
@@ -72,37 +78,35 @@ global.config = {
             autoSpawn: 2
         },
         {
-            roleName: "LongRangeHarvester",
-            tickBeforeReview: 1000,
-            renewAt: 700,
-            enforeMaxNoOfCreepReviewAtOnce: false,
-            overRideReviewAtOnceIfLiveLessThen: 300
-        },
-        {
             roleName: "worker",
             tickBeforeReview: 60,
-            renewAt: 500,
+            renewAt: 300,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
             repairStructuresAtHealthPercentage: 90, // Repair at this percetage
-            autoSpawn: 4
+            autoSpawn: 2
         },
         {
-            roleName: "upgrader",
-            tickBeforeReview: 100,
+            roleName: Role.GUARDIAN,
+            tickBeforeReview: 60,
             renewAt: 500,
-            enforeMaxNoOfCreepReviewAtOnce: false,
+            enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300
         }
     ],
 
     RoadNetwork: {
-        ReviewEvery: 1000
+        Build: false,
     },
     Sources: {
         ReviewEvery: 1000,
         ReviewEveryOnFailure: 100,
     },
+    // Storage: {
+    //     WithDrawLimit: {
+    //         lvl:
+    //     }
+    // }
 
     Room: {
         Stages: {
@@ -119,21 +123,40 @@ global.config = {
             },
             {
                 Function: "buildSourceContainer",
-                ReviewEvery: 200,
+                ReviewEvery: 20,
                 ReviewEveryOnFailure: 10,
             },
             {
                 Function: "buildControllerContainer",
-                ReviewEvery: 200,
+                ReviewEvery: 100,
                 ReviewEveryOnFailure: 10,
+                Build: true,
             },
             {
                 Function: "checkCreepForControllerContainer",
-                ReviewEvery: 200,
-                ReviewEveryOnFailure: 10,
+                ReviewEvery: 1,
+                ReviewEveryOnFailure: 1,
             },
-        ]
+        ],
+        
+    }, 
+    Planner: {
+        Visual: {
+            Road: "navy",
+            Tower: "olive",
+            Store: "yellow",
+            Extension: "aqua",
+            Container: "lime",
+        },
+        BuildCross:{
+            Enabled: true,
+            RoadLength: 6,
+        },
+        MaxLevel: 5
+        
     }
+
+
 }
 
 

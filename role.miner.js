@@ -41,6 +41,9 @@ var roleMiner = {
             if(creep.pos.getRangeTo(myContainer ) == 0) {
                 creep.log("harvesting", LogLevel.DEBUG);
                 let r = creep.harvest(creep.pos.findClosestByPath(FIND_SOURCES))
+                if (r == ERR_NOT_ENOUGH_RESOURCES && creep.ticksToLive < 1400){
+                    creep.review(true)
+                }
                 creep.log("harvesting outcome: " + r, LogLevel.DEBUG);
             } else {
                 creep.log("moving", LogLevel.DEBUG);
