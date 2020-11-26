@@ -20,12 +20,12 @@ Room.prototype.isPrimaryRoom = function () {
 Room.prototype.controllerContainers = function () {
     return this.controller.pos.getContainersRightNextTo();
     // var container = Game.getObjectById(this.memory.controllerContainers);
-    
+
     // if (container !== null){
     //     this.log("By memory" + container, LogLevel.DETAILED);
     //     return container;
     // }
-    
+
     // container = this.controller.pos.getContainerRightNextTo();
     // this.log("By findContainerRightNextTo" + container, LogLevel.DEBUG);
     // if (!container) {
@@ -44,15 +44,15 @@ Room.prototype.getEnergyDropTarget = function (pos) {
         var targets = this.find(FIND_STRUCTURES, {
             filter: (structure) => {
                 return (structure.structureType == STRUCTURE_EXTENSION ||
-                        structure.structureType == STRUCTURE_SPAWN ||
-                        structure.structureType == STRUCTURE_TOWER
-                        ) && structure.store !== undefined && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
+                    structure.structureType == STRUCTURE_SPAWN ||
+                    structure.structureType == STRUCTURE_TOWER
+                ) && structure.store !== undefined && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 0;
             }
         });
 
         if (targets.length > 0) {
             target = targets[0];
-        }  
+        }
     } else {
         target = pos.getEnergyDropTarget();
     }
@@ -63,7 +63,7 @@ Room.prototype.getEnergyDropTarget = function (pos) {
 
 /* Clear down any var used
 */
-Room.prototype.cleanUp =function () {
+Room.prototype.cleanUp = function () {
     this.creeps = undefined;
 };
 
@@ -73,7 +73,7 @@ Room.prototype.cleanUp =function () {
 //     for (var i = 0; i < path.length; i++) 
 //     {
 //         room.log("Path: " + path[i].x + ' - ' + path[i].y, LogLevel.DETAILED)
-        
+
 //         // room.log(path[i].x +' - ' + path[i].y + ' ' + path[i].look()[0].terrain, LogLevel.DETAILED)
 //         // find site without walls
 //         // if (possibleSite.look()[0].terrain == "plain"){
@@ -84,16 +84,16 @@ Room.prototype.cleanUp =function () {
 //     }
 // }
 
-Room.prototype.buildPath = function (posA,posB) {
+Room.prototype.buildPath = function (posA, posB) {
 
     let path = PathFinder.search(
         posA, {
-          pos: posB,
-          range: 1,
-        }, {
-          maxRooms: 10,
-          swampCost: 1,
-          plainCost: 0,
+        pos: posB,
+        range: 1,
+    }, {
+        maxRooms: 10,
+        swampCost: 1,
+        plainCost: 0,
         //   roomCallback: function(roomName) {
         //     console.log("hello")
         //     let room = Game.rooms[roomName];
@@ -102,7 +102,7 @@ Room.prototype.buildPath = function (posA,posB) {
         //     // you should be careful!
         //     if (!room) return;
         //     let costs = new PathFinder.CostMatrix;
-    
+
         //     room.find(FIND_STRUCTURES).forEach(function(struct) {
         //       if (struct.structureType === STRUCTURE_ROAD) {
         //         // Favor roads over plain tiles
@@ -129,16 +129,16 @@ Room.prototype.buildPath = function (posA,posB) {
         //     //         }
         //     //     }
         //     // }
-    
+
         //     // // Avoid creeps in the room
         //     // room.find(FIND_CREEPS).forEach(function(creep) {
         //     //   costs.set(creep.pos.x, creep.pos.y, 0xff);
         //     // });
-    
+
         //     return costs;
         //   }
-        },
-      );
+    },
+    );
     return path
 }
 
@@ -149,9 +149,9 @@ Room.prototype.buildPath = function (posA,posB) {
 
 Room.prototype.roomStage = function () {
     let currentStage = this.memory.currentStage;
-    
-    if (!this.isTaskDueToStart("roomStage")){
-        if (currentStage){
+
+    if (!this.isTaskDueToStart("roomStage")) {
+        if (currentStage) {
             return currentStage;
         }
     }
@@ -170,12 +170,12 @@ Room.prototype.roomStage = function () {
     /* OUTPOST
     */
     if (stage >= RoomStage.CAMP
-        && extensions.length >= 5 
-        && this.controller.level >= 2 
+        && extensions.length >= 5
+        && this.controller.level >= 2
         && this.creepsInRole(Role.CARRIER) >= 2
-        && this.creepsInRole(Role.WORKER)  >= 2 
-        && this.creepsInRole(Role.MINER)  >= 2
-    ){
+        && this.creepsInRole(Role.WORKER) >= 2
+        && this.creepsInRole(Role.MINER) >= 2
+    ) {
         stage = RoomStage.OUTPOST
     }
     /* SETTLEMENT
@@ -186,8 +186,8 @@ Room.prototype.roomStage = function () {
     }
 
     this.memory.currentStage = stage;
-    if (stage !== currentStage){
-        this.log("New Stage: "  + stage + "; OldStage: " + currentStage, LogLevel.ALWAYS)
+    if (stage !== currentStage) {
+        this.log("New Stage: " + stage + "; OldStage: " + currentStage, LogLevel.ALWAYS)
     }
     this.setTaskToRenew("roomStage", config.Room.Stages.ReviewEvery)
     return stage;
@@ -198,7 +198,7 @@ Room.prototype.isUnderAttack = function () {
         filter: function (s) {
             return !s.hits > 0
         }
-    }).length !==0 
+    }).length !== 0
 }
 
 
@@ -207,17 +207,17 @@ Room.prototype.withDrawLimit = function () {
 }
 
 Room.prototype.getRangeBetweenPos = function (posA, posB) {
-    if (!Memory.pathCost){
+    if (!Memory.pathCost) {
         Memory.pathCost = [];
     }
 
-    let exiting = Memory.pathCost.filter(function(r){return r.posA == posA.toString() && r.posB == posB.toString()});
+    let exiting = Memory.pathCost.filter(function (r) { return r.posA == posA.toString() && r.posB == posB.toString() });
     if (exiting.length > 0) {
-        return exiting[0].cost 
+        return exiting[0].cost
     }
 
-    let ret = PathFinder.search(posA,posB)
-    let obj = { posA:posA.toString(), posB:posB.toString(), cost: ret.cost }
+    let ret = PathFinder.search(posA, posB)
+    let obj = { posA: posA.toString(), posB: posB.toString(), cost: ret.cost }
     Memory.pathCost.push(obj)
     return ret.cost;
 }
@@ -239,7 +239,7 @@ Room.prototype.getRangeBetweenPos = function (posA, posB) {
 //         case Direction.SOUTH:
 //             f = FIND_EXIT_BOTTOM;
 //             break;
-        
+
 //     }
 //     return (this.find(f).length > 0)
 
@@ -249,16 +249,29 @@ Room.prototype.getRangeBetweenPos = function (posA, posB) {
 
 Room.prototype.isHealthy = function () {
     if (this.creepsInRole(Role.CARRIER) < 1
-        || this.creepsInRole(Role.WORKER)  < 1 
-        || this.creepsInRole(Role.MINER)  < 1){
+        || this.creepsInRole(Role.WORKER) < 1
+        || this.creepsInRole(Role.MINER) < 1) {
         return false
     } else {
         return true
     }
-    
+
 }
 
 // TODO should change with room stage
 Room.prototype.repairWallLess = function () {
     return 10000
 }
+
+
+Room.prototype.controllerContainersEnergy = function () {
+    let containers = this.controllerContainers()
+    let eInStore = 0;
+    for (i in containers) {
+        eInStore += containers[i].store[RESOURCE_ENERGY]
+    }
+    return eInStore;
+}
+
+
+

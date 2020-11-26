@@ -37,7 +37,7 @@ var roleWorker = {
 
         /* This else to do
         */
-        if (!workerTarget && creep.room.isHealthy()) {
+        if (!workerTarget && creep.room.isHealthy() && creep.room.storage.store[RESOURCE_ENERGY] > 20000) {
             creep.upgradeRoomController();
             return;
         }
@@ -59,7 +59,10 @@ var roleWorker = {
         if (creep.getTask() == CreepTasks.BUILD) {
             creep.log("Building", LogLevel.DEBUG);
             creep.buildIt(workerTarget);
-        } else if (creep.getTask() == CreepTasks.UPGRADE_CONTROLLER) {
+        } else if (creep.getTask() == CreepTasks.UPGRADE_CONTROLLER 
+          && creep.room.storage.store[RESOURCE_ENERGY] > 20000
+        ) {
+            //console.log(creep.room.storage.store[RESOURCE_ENERGY] > 20000)
             creep.log("upgradeRoomController", LogLevel.DEBUG);
             creep.upgradeRoomController();
         } else if (creep.getTask() == CreepTasks.REPAIRER) {
@@ -92,6 +95,8 @@ var roleWorker = {
         room.log("Spwaming new workder - " + name + ' body: ' + body.toString(), LogLevel.DEBUG);
         return { name, body, memory };
 
+    },noRequiredCreep: function(room) {
+        return 2
     }
 
 }
@@ -106,7 +111,8 @@ function assignWork(creep) {
             (s.hitsMax * creep.getRoleConfig().repairStructuresAtHealthPercentage / 100)
             && s.structureType != STRUCTURE_WALL
             && s.structureType != STRUCTURE_RAMPART)
-            || ([STRUCTURE_WALL,STRUCTURE_RAMPART].includes(s.structureType) && s.hits < creep.room.repairWallLess())
+            //|| ([STRUCTURE_WALL,STRUCTURE_RAMPART].includes(s.structureType) && s.hits < creep.room.repairWallLess()
+            //)
     });
 
     if (target !== null) {

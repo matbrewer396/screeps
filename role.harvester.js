@@ -124,6 +124,8 @@ var roleHarvester = {
         room.log("Spwaming new workder - " + name + ' body: ' + body.toString(),LogLevel.DEBUG);
         return {name, body, memory};
     
+    }, noRequiredCreep: function(room) {
+        return 0
     }
 }
 

@@ -52,19 +52,9 @@ function checkCreepForControllerContainer(room) {
     // console.log( _.sum(room.controllerContainers().store[RESOURCE_ENERGY]
     // ))
 
-    let containers = room.controllerContainers()
-    let eInStore = 0;
-    for (i in containers) {
-        eInStore += containers[i].store[RESOURCE_ENERGY]
-    }
     
-    let noRequired = Math.round(eInStore / 2200);
-
-
-    if (noRequired > _.sum(room.findMyCreeps(), (c) => c.memory.role == Role.UPGRADER && c.ticksToLive > 50)) {
-        console.log("creep needed; " + noRequired+ "; sum:" + _.sum(room.findMyCreeps(), (c) => c.memory.role == Role.UPGRADER && c.ticksToLive > 50))
-        spawnCreep(Role.UPGRADER, room);
-    }
+    
+    
 
     // let container = containers[i];
 

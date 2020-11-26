@@ -6,6 +6,10 @@ Room.prototype.findMyCreeps = function (role) {
     return this.find(FIND_MY_CREEPS)
 }
 
+Room.prototype.findSources = function (role) {
+    return this.find(FIND_SOURCES)
+}
+
 
 Room.prototype.findMainSpawns = function () {
     return this.find(FIND_MY_SPAWNS)[0];

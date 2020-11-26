@@ -1,3 +1,4 @@
+const { cond } = require('lodash');
 let creepLogic = require('./roles');
 
 Room.prototype.startUp = function () {
@@ -41,6 +42,17 @@ Room.prototype.startUp = function () {
     if (this.isPrimaryRoom() == false) { return };
 
     baseBuilder(this);
+    this.remoteMining();
+
+    // let c = Game.getObjectById("9e9507fbcc748d8")
+    // console.log("getRepairAt-" + c.getRepairAt())//.Creep)
+    // console.log(
+    //     JSON.stringify(
+    //         config.Room.Repair.filter(
+    //             function (c) { return c.Objects.includes(STRUCTURE_RAMPART) }
+    //         )[0].StartAt.Creep
+    //     )
+    // )
 
     //this.plan();
 
@@ -48,7 +60,6 @@ Room.prototype.startUp = function () {
 
     /* spamn creeps
     */
-    let spawning = this.findMainSpawns().isBusy();
     if (this.creepsInRole(Role.WORKER) == 0 && this.energyAvailable >= 300) {
         spawnCreep(Role.WORKER, this);
     }
@@ -60,87 +71,28 @@ Room.prototype.startUp = function () {
     }
 
 
-    if (this.energyAvailable == this.energyCapacityAvailable && !spawning) {
+    if (this.energyAvailable == this.energyCapacityAvailable && !this.findMainSpawns().isBusy()) {
         for (i in config.Roles) {
             let role = config.Roles[i];
-            this.log("Role: " + role.roleName + '; Auto Spawn: ' + role.autoSpawn, LogLevel.DEBUG);
+            this.log("Role: " + role.roleName + ';', LogLevel.DEBUG);
 
-            if (role.autoSpawn == undefined) {
-                continue;
-            };
 
             let noOf = this.creepsInRole(role.roleName);
-            this.log("Role: " + role.roleName + '; Currently have: ' + noOf, LogLevel.DEBUG);
-            if (noOf < role.autoSpawn) {
+            this.log("Role: " + role.roleName + '; Currently have: ' + noOf
+                + "; Required: " + creepLogic[role.roleName].noRequiredCreep(this), LogLevel.DEBUG);
+            if (noOf < creepLogic[role.roleName].noRequiredCreep(this)) {
                 spawnCreep(role.roleName, this);
             }
         }
     } else {
-        this.log("Not Spawning. IsBusy: " + spawning
+        this.log("Not Spawning. IsBusy: " + this.findMainSpawns().isBusy()
             + "; energyAvailable: " + this.energyAvailable
             + "; energyAvailable: " + this.energyCapacityAvailable, LogLevel.DEBUG)
     }
 
-    // TODO automate this
-    this.addRemoteSource(new RoomPosition(34, 20, "W8N3"))
-    this.addRemoteSource(new RoomPosition(30, 21, "W8N3"))
-    this.addRemoteSource(new RoomPosition(4, 12, "W8N2"))
-    this.addRemoteSource(new RoomPosition(21, 43, "W8N2"))
-    this.addRemoteSource(new RoomPosition(43, 31, "W7N2"))
-    this.addRemoteSource(new RoomPosition(23, 34, "W7N2"))
-    this.addRemoteSource(new RoomPosition(41, 46, "W7N4"))
-    this.addRemoteSource(new RoomPosition(12, 31, "W7N4"))
-    this.addRemoteSource(new RoomPosition(7, 43, "W6N3"))
-    this.addRemoteSource(new RoomPosition(28, 20, "W6N3"))
 
 
-    if (this.energyAvailable == this.energyCapacityAvailable
-        && !spawning
-        && this.isHealthy()) {
-        for (i in this.memory.remoteSources) {
-            let pos = new RoomPosition(this.memory.remoteSources[i].x, this.memory.remoteSources[i].y, this.memory.remoteSources[i].roomName)
-            /** create worker creep */
-            let c = _(Game.creeps).filter(
-                {
-                    memory: {
-                        role: 'harvester'
-                        , remoteSource: {
-                            x: pos.x,
-                            y: pos.y,
-                            roomName: pos.roomName
-                        }
-                    }
-                }).value().length;
-            if (c < pos.fnNoOfCreepsRequired()) {
-                this.log("Creep doesnt exists for " + pos.toString(), LogLevel.DEBUG)
-                let opt = {
-                    Memory: { remoteSource: pos }
-                }
-                spawnCreep(Role.HARVESTER, this, opt)
 
-            }
-
-            /** create a guardian */
-            if (c > 2 || c == pos.fnNoOfCreepsRequired()) {
-                let g = _(Game.creeps).filter(
-                    {
-                        memory: {
-                            role: Role.GUARDIAN
-                            , guardRoom: pos.roomName
-                        }
-                    }).value().length;
-
-                if (g <= 0) {
-                    let opt = {
-                        Memory: { guardRoom: pos.roomName }
-                    }
-                    spawnCreep(Role.GUARDIAN, this, opt)
-                    return
-                }
-
-            }
-        }
-    }
 
 
     /* Near by room

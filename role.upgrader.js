@@ -55,6 +55,16 @@ var roleUpgrader = {
         room.log("Spawning new Upgrader - " + name + ' body: ' + body.toString(), LogLevel.DEBUG);
         return { name, body, memory };
 
+    }, noRequiredCreep: function(room) {
+
+        //let noRequired = Math.round(room.controllerContainersEnergy() / 3000);
+        // if (noRequired > _.sum(room.findMyCreeps(), (c) => c.memory.role == Role.UPGRADER && c.ticksToLive > 50)) {
+        //     console.log("creep needed; " + noRequired+ "; sum:" + _.sum(room.findMyCreeps(), (c) => c.memory.role == Role.UPGRADER && c.ticksToLive > 50))
+        //     spawnCreep(Role.UPGRADER, room);
+        // }
+
+
+        return Math.round(room.controllerContainersEnergy() / 3000)
     }
 };
 

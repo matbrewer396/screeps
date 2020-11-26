@@ -29,10 +29,12 @@ var roleCarrier = {
             myRoom: room.name
         };
     
-        body = fnBuildBody(body, [CARRY,MOVE],room.energyAvailable)
+        body = fnBuildBody(body, [CARRY,MOVE,CARRY],room.energyAvailable)
         room.log("Spawning new  - " + name + ' body: ' + body.toString(),LogLevel.DEBUG);
         return {name, body, memory};
     
+    }, noRequiredCreep: function(room) {
+        return 2
     }
 
 

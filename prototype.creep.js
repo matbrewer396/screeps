@@ -1,12 +1,3 @@
-// var roleHarvester = require('role.harvester');
-
-// var roleBuilder = require('role.builder');
-// var roleUpgrader = require('role.upgrader');
-// var roleMiner = require('role.miner');
-// var roleWorker = require('role.worker');
-// var roleCarrier = require('role.carrier');
-// var roleLongRangeHarvester = require('role.longRangeHarvester');
-
 let creepLogic = require('./roles');
 
 
@@ -33,6 +24,7 @@ Creep.prototype.run = function () {
         this.room.visual.circle(this.pos, { fill: 'transparent', radius: 0.45, stroke: config.Creep.Debug.Visual })
     }
 
+    this.checkPos();
     /* Review Creep
     */
     this.log("tickBeforeReview " + this.memory.tickBeforeReview, LogLevel.DEBUG);
@@ -209,15 +201,5 @@ Creep.prototype.seekAndAttack = function () {
 }
 
 
-Creep.prototype.moveToRoom = function (room) {
-    if (this.pos.roomName !== room || this.pos.isBoarder()) {
-        let target = new RoomPosition(25, 25, room);
-        let r = this.moveTo(target)
-        this.log("MoveToRoom: " + room + "; OutCome: " + r, LogLevel.DEBUG)
-    } else {
-        return false;
-    }
-
-}
 
 

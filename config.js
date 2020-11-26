@@ -8,7 +8,7 @@ global.config = {
     },
     LogOverRide: {
         Room: "",
-        Creep: "", // MINER_3532
+        Creep: "HARVESTER_2535", // MINER_3532
         StructureSpawn: "",
     },
 
@@ -21,15 +21,15 @@ global.config = {
             LastHopeProtocol: 10, // will recycle if less and this and no energy at swan 
         },
         Harvesting: {
-            Drained:{
+            Drained: {
                 WaitIfTickLessThen: 20
             }
         },
-        DropOff:{
+        DropOff: {
             LastWithDrawExpiry: 20
         },
-        Debug:{
-            Visual:"fuchsia"
+        Debug: {
+            Visual: "fuchsia"
         }
     },
 
@@ -67,7 +67,6 @@ global.config = {
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
             maxbodyCost: 650, // 6 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
-            autoSpawn: 1
         },
         {
             roleName: "carrier",
@@ -75,7 +74,6 @@ global.config = {
             renewAt: 600,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
-            autoSpawn: 2
         },
         {
             roleName: "worker",
@@ -84,7 +82,6 @@ global.config = {
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
             repairStructuresAtHealthPercentage: 90, // Repair at this percetage
-            autoSpawn: 2
         },
         {
             roleName: Role.GUARDIAN,
@@ -102,6 +99,10 @@ global.config = {
         ReviewEvery: 1000,
         ReviewEveryOnFailure: 100,
     },
+
+    Repair: {
+
+    },
     // Storage: {
     //     WithDrawLimit: {
     //         lvl:
@@ -112,7 +113,7 @@ global.config = {
         Stages: {
             ReviewEvery: 100
         },
-        Spawning:{
+        Spawning: {
             Allow: true,
         },
         Tasks: [
@@ -138,8 +139,35 @@ global.config = {
                 ReviewEveryOnFailure: 1,
             },
         ],
-        
-    }, 
+        //STRUCTURE_SPAWN  , STRUCTURE_EXTENSION  , STRUCTURE_ROAD  , STRUCTURE_WALL  , STRUCTURE_RAMPART  , STRUCTURE_KEEPER_LAIR  , STRUCTURE_PORTAL  , STRUCTURE_CONTROLLER  , STRUCTURE_LINK  , STRUCTURE_STORAGE  , STRUCTURE_TOWER  , STRUCTURE_OBSERVER  , STRUCTURE_POWER_BANK  , STRUCTURE_POWER_SPAWN  , STRUCTURE_EXTRACTOR  , STRUCTURE_LAB  , STRUCTURE_TERMINAL  , STRUCTURE_CONTAINER  , STRUCTURE_NUKER  , STRUCTURE_FACTORY  , STRUCTURE_INVADER_CORE
+        Repair: [
+            {
+                Objects: [STRUCTURE_CONTAINER, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_ROAD, STRUCTURE_TOWER],
+                RoomLevel: 1,
+                Upto: 100,
+                StartAt: {
+                    Tower: 100,
+                    Creep: 90,
+                }
+
+            },
+            {
+                //1 hit ramp(10,000,000) 0.0000001, 30 hit wall(300,000,00) 0.0000001 
+                Objects: [STRUCTURE_WALL, STRUCTURE_RAMPART],
+                RoomLevel: 1,
+                Upto: 25,
+                StartAt: {
+                    Tower: 0.001, // 10k
+                    Creep: 0.0008, // 8k
+                }
+
+            },
+
+
+        ]
+
+
+    },
     Planner: {
         Visual: {
             Road: "navy",
@@ -148,12 +176,12 @@ global.config = {
             Extension: "aqua",
             Container: "lime",
         },
-        BuildCross:{
+        BuildCross: {
             Enabled: true,
             RoadLength: 6,
         },
         MaxLevel: 5
-        
+
     }
 
 
