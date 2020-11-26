@@ -76,9 +76,14 @@ var roleHarvester = {
             let target; 
             // if (Game.rooms[creep.memory.myRoom].storage.store[RESOURCE_ENERGY] > myConfig.upgradeIfStorageOver){
                 target = Game.rooms[creep.memory.myRoom].storage;
-                if (creep.pos.roomName !== creep.memory.myRoom || creep.pos.getRangeTo(target) > 30){
+                if (!target) {
+                    target = Game.rooms[creep.memory.myRoom].findMainSpawns();
+                }
+
+                if (creep.pos.roomName !== creep.memory.myRoom){
                     creep.moveTo(target);
                 } else {
+                    creep.room.addRoadToPlan(creep.pos)
                     creep.dropOffEnergy();
                 }
             // } else {

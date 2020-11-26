@@ -63,8 +63,11 @@ var roleUpgrader = {
         //     spawnCreep(Role.UPGRADER, room);
         // }
 
+        if (!room.heathyStorageReserve()){
+            return
+        }
 
-        return Math.round(room.controllerContainersEnergy() / 3000)
+        return Math.round(room.controllerContainersEnergy() / 4500)
     }
 };
 

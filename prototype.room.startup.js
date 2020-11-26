@@ -41,8 +41,9 @@ Room.prototype.startUp = function () {
     */
     if (this.isPrimaryRoom() == false) { return };
 
-    baseBuilder(this);
-    this.remoteMining();
+    
+    
+    
 
     // let c = Game.getObjectById("9e9507fbcc748d8")
     // console.log("getRepairAt-" + c.getRepairAt())//.Creep)
@@ -58,22 +59,34 @@ Room.prototype.startUp = function () {
 
     // console.log(this.controllerContainers())
 
-    /* spamn creeps
+    /* spamn creeps - rapid recovery protocol  
     */
     if (this.creepsInRole(Role.WORKER) == 0 && this.energyAvailable >= 300) {
         spawnCreep(Role.WORKER, this);
     }
 
     if (this.creepsInRole(Role.CARRIER) == 0
-        && this.creepsInRole(Role.MINER) == 0
+        && this.energyAvailable >= 600
+        && this.storage 
+        && this.storage.store[RESOURCE_ENERGY] > 0 ) {
+        spawnCreep(Role.CARRIER, this)
+    }
+
+    if (this.creepsInRole(Role.CARRIER) == 0
+        && this.creepsInRole(Role.MINER) > 0
         && this.energyAvailable >= 600) {
         spawnCreep(Role.CARRIER, this)
     }
 
-
-    if (this.energyAvailable == this.energyCapacityAvailable && !this.findMainSpawns().isBusy()) {
+    /** bau spawn */
+    if (!this.findMainSpawns().isBusy()) {
         for (i in config.Roles) {
             let role = config.Roles[i];
+            let maxBodyCost = config.Roles[i].maxbodyCost
+            if (!maxBodyCost) { maxBodyCost = this.energyCapacityAvailable }
+            if (this.energyAvailable < maxBodyCost ) {
+                continue
+            }
             this.log("Role: " + role.roleName + ';', LogLevel.DEBUG);
 
 
@@ -82,6 +95,7 @@ Room.prototype.startUp = function () {
                 + "; Required: " + creepLogic[role.roleName].noRequiredCreep(this), LogLevel.DEBUG);
             if (noOf < creepLogic[role.roleName].noRequiredCreep(this)) {
                 spawnCreep(role.roleName, this);
+                break
             }
         }
     } else {
@@ -91,8 +105,14 @@ Room.prototype.startUp = function () {
     }
 
 
+    if (this.roomStage() >= RoomStage.OUTPOST){ 
+        this.remoteMining();
+    }
+    baseBuilder(this);
+    this.plan()
 
 
+    
 
 
     /* Near by room

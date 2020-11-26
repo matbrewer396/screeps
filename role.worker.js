@@ -37,7 +37,10 @@ var roleWorker = {
 
         /* This else to do
         */
-        if (!workerTarget && creep.room.isHealthy() && creep.room.storage.store[RESOURCE_ENERGY] > 20000) {
+        if (!workerTarget 
+            && creep.room.isHealthy() 
+            && creep.room.heathyStorageReserve()
+        ) {
             creep.upgradeRoomController();
             return;
         }
@@ -60,7 +63,7 @@ var roleWorker = {
             creep.log("Building", LogLevel.DEBUG);
             creep.buildIt(workerTarget);
         } else if (creep.getTask() == CreepTasks.UPGRADE_CONTROLLER 
-          && creep.room.storage.store[RESOURCE_ENERGY] > 20000
+          //&& creep.room.storage.store[RESOURCE_ENERGY] > 20000
         ) {
             //console.log(creep.room.storage.store[RESOURCE_ENERGY] > 20000)
             creep.log("upgradeRoomController", LogLevel.DEBUG);
@@ -96,7 +99,17 @@ var roleWorker = {
         return { name, body, memory };
 
     },noRequiredCreep: function(room) {
-        return 2
+        if (room.controller.level == 1) {
+            return 4
+        } else if (room.controller.level ==  2) {
+            return 6
+        } else if (room.controller.level ==  3) {
+            return 4
+        } else {
+            return 2
+        }
+
+        
     }
 
 }
@@ -107,10 +120,10 @@ function assignWork(creep) {
      *  Repair Neext builing
      */
     var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-        filter: (s) => s.hits < (
-            (s.hitsMax * creep.getRoleConfig().repairStructuresAtHealthPercentage / 100)
-            && s.structureType != STRUCTURE_WALL
-            && s.structureType != STRUCTURE_RAMPART)
+        filter: (s) => s.hits < (s.hitsMax *0.9)
+            // (s.hitsMax * creep.getRoleConfig().repairStructuresAtHealthPercentage / 100)
+            // && s.structureType != STRUCTURE_WALL
+            // && s.structureType != STRUCTURE_RAMPART)
             //|| ([STRUCTURE_WALL,STRUCTURE_RAMPART].includes(s.structureType) && s.hits < creep.room.repairWallLess()
             //)
     });
@@ -126,11 +139,11 @@ function assignWork(creep) {
 
     /* builder
     */
-    target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES, {
+    target = creep.room.find(FIND_CONSTRUCTION_SITES, {
         filter: (structure) => {
             return (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN)
         }
-    });
+    }).sort(function(a, b){return b.progress-a.progress})[0];
 
     if (!target) {
         target = creep.pos.findClosestByRange(FIND_CONSTRUCTION_SITES)

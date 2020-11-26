@@ -34,7 +34,12 @@ var roleCarrier = {
         return {name, body, memory};
     
     }, noRequiredCreep: function(room) {
-        return 2
+        if (room.creepsInRole(Role.MINER) > 1 ) {
+            return 2
+        } else {
+            return 0
+        }
+        
     }
 
 

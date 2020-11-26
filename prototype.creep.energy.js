@@ -49,7 +49,6 @@ Creep.prototype.collectEnergy = function (havevestIsNone) {
 
     this.log("CE; container: " + container, LogLevel.DEBUG)
 
-
     if (container == null) {
         container = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
@@ -57,6 +56,7 @@ Creep.prototype.collectEnergy = function (havevestIsNone) {
                     && (structure.store[RESOURCE_ENERGY] > this.room.withDrawLimit()
                         || this.room.isHealthy() == false
                         || this.memory.role == Role.CARRIER) // CARRIER can take to spawn
+                    && structure.store[RESOURCE_ENERGY] > 0
                 );
             }
         });
@@ -113,6 +113,10 @@ Creep.prototype.harvestSource = function (source) {
         source = FindNewSource(this);
     }
 
+    if (!source) {
+        this.memory.useSource = null
+        return
+    }
     var r = this.harvest(source);
     if (r == ERR_NOT_IN_RANGE) {
         this.moveTo(source, { visualizePathStyle: { stroke: '#ffaa00' } });
@@ -158,10 +162,9 @@ Creep.prototype.dropOffEnergy = function () {
         this.taskCompleted();
     }
 
+    /** long range havester go direct  */
     if (this.getRoleConfig().dropOffAtUpgradeContainer) {
         target = this.room.findUpgradeControllerWithSpace()[0]
-
-        console.log(target)
     }
     
     if (this.getRoleConfig().dropOffAtStorage && this.room.isHealthy()) {
@@ -176,6 +179,8 @@ Creep.prototype.dropOffEnergy = function () {
         target = this.pos.getEnergyDropTarget();
         this.log("DE; pos.getEnergyDropTarget: " + target + ';', LogLevel.DEBUG)
     };
+
+    
     //this.log("Drop off target" +target + '; Free: ' + target.store.getFreeCapacity(RESOURCE_ENERGY), LogLevel.DEBUG)
     if (target == null) {
         return false;

@@ -2,7 +2,8 @@
     - 
 
 - role 
-    add functoin no of required
+    <!-- add function no of required -->
+    - function no of required - add logic
 
 - guardian 
     - return to spawn when near death
@@ -11,11 +12,11 @@
     <!-- - return half full -->
     - flee on emery
     - should have more movement
-    - go to 
+    - automate remote source logic
 - spawn
     - create spawn queue?
-- road network
-    - path finder go though walls! 
+<!-- - road network
+    - path finder go though walls!  -->
 - structures
     - NeedRepair
 
@@ -30,3 +31,4 @@ claimer
 
 Minder
     - go back and though rather then reviewing 
+

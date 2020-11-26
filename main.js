@@ -16,16 +16,41 @@ function processRooms() {
             Memory.primaryRoom = room.name;    
             console.log('Settings primary room: ' +  room.name);
         }
-        room.startUp();
+        try {
+            room.startUp();
+        } catch (error) {
+            console.log("ERROR! room.startUp();" + error.message);
+        // or log remotely
+        } finally {
+        // clean up
+        }
+        
         /* process creeps
         */
         for (var name in room.find(FIND_MY_CREEPS)) {
-            room.find(FIND_MY_CREEPS)[name].run();
+            try {
+                room.find(FIND_MY_CREEPS)[name].run();
+            } catch (error) {
+                console.log("ERROR! creep.run(); stack:" + error.stack);
+            // or log remotely
+            } finally {
+            // clean up
+                continue
+            }
+            
         }
 
         var towers = room.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
         for (var tower in towers) {
-            towers[tower].run();
+            try {
+                towers[tower].run();
+            } catch (error) {
+                console.log("ERROR! Tower.run()" + error.message);
+            // or log remotely
+            } finally {
+            // clean up
+            }
+            
         }
 
         // room.cleanUp();

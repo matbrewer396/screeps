@@ -3,17 +3,13 @@ baseBuilder = function (room) {
 
     if (room.isTaskDueToStart("buildSourceContainer")) { buildSourceContainer(room); }
 
-    if (room.roomStage() >= RoomStage.CAMP && room.controller.level > 1) {
-        if (room.isTaskDueToStart("roadNetwork")) { roadNetwork(room); }
-    }
-
 
     /* Outpost task
     */
-    // if (room.roomStage() >= RoomStage.OUTPOST){
-    if (room.isTaskDueToStart("buildControllerContainer")) { buildControllerContainer(room); }
-    if (room.isTaskDueToStart("checkCreepForControllerContainer")) { checkCreepForControllerContainer(room); }
-    //}
+    if (room.roomStage() >= RoomStage.OUTPOST){
+        if (room.isTaskDueToStart("buildControllerContainer")) { buildControllerContainer(room); }
+        //if (room.isTaskDueToStart("checkCreepForControllerContainer")) { checkCreepForControllerContainer(room); }
+    }
 }
 
 
@@ -26,7 +22,6 @@ function buildControllerContainer(room) {
     let myConfig = config.Room.Tasks.filter(function (r) { return r.Function == myName })[0];
     room.log('Build Controller Container ' + room.controller, LogLevel.DEBUG);
     var containerSites = room.controller.pos.getNearByBuildablePositions();
-
     for (i in containerSites) {
         let containerSite = containerSites[i];
         room.log('Build Controller Container ' + containerSite, LogLevel.DEBUG);
@@ -42,36 +37,6 @@ function buildControllerContainer(room) {
 
         //let upCreep =  _.sum(Game.creeps, (c) => c.memory.minerContrainer == container.id);
     }
-    room.setTaskToRenew(myName, myConfig.ReviewEvery)
-}
-
-function checkCreepForControllerContainer(room) {
-    let myName = "checkCreepForControllerContainer";
-    let myConfig = config.Room.Tasks.filter(function (r) { return r.Function == myName })[0];
-
-    // console.log( _.sum(room.controllerContainers().store[RESOURCE_ENERGY]
-    // ))
-
-    
-    
-    
-
-    // let container = containers[i];
-
-    //     let upCreep =  _.sum(Game.creeps, (c) => c.memory.upgraderContainer == container.id)
-    //     //console.log(upCreep)
-    //     let opt = {
-    //         memory: {
-    //             upgraderContainer: container.id
-    //         }
-
-    //     }
-      //  spawnCreep(Role.UPGRADER, room, opt);
-
-    // for (i in room.)
-
-
-
     room.setTaskToRenew(myName, myConfig.ReviewEvery)
 }
 
@@ -130,46 +95,6 @@ function buildSourceContainer(room) {
 
 }
 
-
-function roadNetwork(room) {
-    let myName = "roadNetwork";
-    let myConfig = config.Room.Tasks.filter(function (r) { return r.Function == myName })[0];
-    /* all sources
-    */
-    var sources = room.find(FIND_SOURCES);
-    for (var i in sources) {
-        var source = sources[i];
-        buildRoad(source.pos, room.controller.pos, room)
-
-        var spawns = room.find(FIND_MY_SPAWNS);
-        for (var j in spawns) {
-            buildRoad(source.pos, spawns[j].pos, room);
-        }
-    }
-
-
-    /** Spawn should have aroad around i */
-
-    var spawns = room.find(FIND_MY_SPAWNS);
-    for (var i in spawns) {
-        let positions = spawns[i].pos.getNearByPositions();
-
-        for (var j in positions) {
-            if (!positions[j].hasRoad()) { // create road if not exists
-                room.createConstructionSite(positions[j].x, positions[j].y, STRUCTURE_ROAD);
-            };
-        }
-    }
-
-    /** roads to rooms */
-    for (i in room.memory.remoteSources) {
-        let pos = new RoomPosition(room.memory.remoteSources[i].x, room.memory.remoteSources[i].y, room.memory.remoteSources[i].roomName)
-        buildRoad(room.findMainSpawns().pos, pos, room)
-    }
-
-    /** Next rewiew date */
-    room.setTaskToRenew(myName, myConfig.ReviewEvery)
-}
 
 function buildRoad(posA, posB, room) {
     let path = room.buildPath(posA, posB)

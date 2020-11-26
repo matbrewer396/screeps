@@ -25,7 +25,7 @@ require('prototype.creep.movement');
 require('prototype.RoomPosition');
 require('prototype.Structure');
 
-
+require('Command');
 
 
 

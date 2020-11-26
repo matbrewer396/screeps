@@ -165,7 +165,7 @@ Room.prototype.roomStage = function () {
         }
     });
 
-    var towers = this.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } });
+    var towers = this.findMyTowers();
 
     /* OUTPOST
     */
@@ -272,6 +272,17 @@ Room.prototype.controllerContainersEnergy = function () {
     }
     return eInStore;
 }
+
+
+Room.prototype.heathyStorageReserve = function () {
+    if (this.storage){
+        return this.storage.store[RESOURCE_ENERGY] > config.Room.HeathyStorageReserve[this.controller.level];
+    } else {
+        return true
+    }
+    
+}
+
 
 
 

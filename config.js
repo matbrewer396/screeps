@@ -8,7 +8,7 @@ global.config = {
     },
     LogOverRide: {
         Room: "",
-        Creep: "HARVESTER_2535", // MINER_3532
+        Creep: "GUARDIAN_4285", // MINER_3532
         StructureSpawn: "",
     },
 
@@ -110,6 +110,16 @@ global.config = {
     // }
 
     Room: {
+        HeathyStorageReserve: {
+            1:20000,
+            2:20000,
+            3:20000,
+            4:20000,
+            5:20000,
+            6:40000,
+            7:80000,
+            8:160000,
+        },
         Stages: {
             ReviewEvery: 100
         },
@@ -117,11 +127,6 @@ global.config = {
             Allow: true,
         },
         Tasks: [
-            {
-                Function: "roadNetwork",
-                ReviewEvery: 1000,
-                ReviewEveryOnFailure: 100,
-            },
             {
                 Function: "buildSourceContainer",
                 ReviewEvery: 20,
@@ -169,16 +174,23 @@ global.config = {
 
     },
     Planner: {
+        ShowAll: true,
         Visual: {
             Road: "navy",
             Tower: "olive",
             Store: "yellow",
             Extension: "aqua",
             Container: "lime",
+
+            road: "navy",
+            tower: "olive",
+            storage: "yellow",
+            extension: "aqua",
+            container: "lime",
         },
         BuildCross: {
             Enabled: true,
-            RoadLength: 6,
+            RoadLength: 12,
         },
         MaxLevel: 5
 
@@ -189,3 +201,15 @@ global.config = {
 
 
 
+// 3-4	1 tower
+// 5-6	2 towers
+// 7	3 towers
+// 8	6 towers
+
+// 2	5 extensions (50 capacity)
+// 3	10 extensions (50 capacity)
+// 4	20 extensions (50 capacity)
+// 5	30 extensions (50 capacity)
+// 6	40 extensions (50 capacity)
+// 7	50 extensions (100 capacity)
+// 8	60 extensions (200 capacity)

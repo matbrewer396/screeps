@@ -38,6 +38,26 @@ Room.prototype.findUpgradeControllerWithSpace = function (creep) {
     )
 }
 
+Room.prototype.findMyTowers = function () {
+    return this.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_TOWER } })
+}
+
+Room.prototype.findMyContainers = function () {
+    return this.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_CONTAINER } })
+}
+Room.prototype.findMyExtension = function () {
+    return this.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_EXTENSION } })
+}
+
+Room.prototype.findConstructionSites = function () {
+    return this.find(FIND_CONSTRUCTION_SITES)
+}
+
+
+
+
+//, { filter: { structureType: STRUCTURE_CONTAINER } }
+
 // Room.prototype.findEmptyControllerContainer = function () {
 //     return this.find(FIND_MY_STRUCTURES
 //         , {

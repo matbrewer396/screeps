@@ -1,10 +1,11 @@
-RoomPosition.prototype.getNearByPositions = function getNearByPositions() {
+RoomPosition.prototype.getNearByPositions = function getNearByPositions(range) {
+    if (!range) { range = 1};
     var positions = [];
-    let startX = this.x - 1 || 1;
-    let startY = this.y - 1 || 1;
+    let startX = this.x - range || 1;
+    let startY = this.y - range || 1;
     var maxRoomPos = 49
-    for (x = startX; x <= this.x + 1 && x < maxRoomPos; x++) {
-        for (y = startY; y <= this.y + 1 && y < maxRoomPos; y++) {
+    for (x = startX; x <= this.x + range && x < maxRoomPos; x++) {
+        for (y = startY; y <= this.y + range && y < maxRoomPos; y++) {
             if (!(x == this.x && y == this.y)) {
                 positions.push(new RoomPosition(x, y, this.roomName));
             }
@@ -13,8 +14,8 @@ RoomPosition.prototype.getNearByPositions = function getNearByPositions() {
     return positions;
 }
 
-RoomPosition.prototype.getNearByBuildablePositions = function getNearByBuildablePositions() {
-    let positions = this.getNearByPositions();
+RoomPosition.prototype.getNearByBuildablePositions = function getNearByBuildablePositions(range) {
+    let positions = this.getNearByPositions(range);
     let openPositions = [];
     const terrain = new Room.Terrain(positions[0].roomName);
     for (i in positions) {
@@ -27,6 +28,18 @@ RoomPosition.prototype.getNearByBuildablePositions = function getNearByBuildable
     return openPositions;
 
 };
+
+RoomPosition.prototype.isPassable = function isPassable() {
+    const terrain = new Room.Terrain(this.roomName);
+    if (terrain.get(this.x, this.y) !== TERRAIN_MASK_WALL) {
+        return true
+    } else {
+        return false
+    }
+}
+
+
+
 
 RoomPosition.prototype.getContainerRightNextTo = function getContainerRightNextTo() {
     var container = this.findClosestByRange(FIND_STRUCTURES, {
@@ -98,10 +111,26 @@ RoomPosition.prototype.getEnergyDropTarget = function () {
             filter: (structure) => {
                 return ((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1)
                     || (structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200)
-                    || (Game.rooms[this.roomName].controllerContainers().filter(function (r) { return r.id == structure.id }).length == 1 && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 50)
                     ;
             }
         });
+
+        if (target) {return target; }
+
+        if ( !this.room().heathyStorageReserve()
+        ) {
+            target = this.room().storage 
+        } else {
+            target = this.findClosestByRange(FIND_STRUCTURES, {
+                filter: (structure) => {
+                    return (Game.rooms[this.roomName].controllerContainers().filter(function (r) { return r.id == structure.id }).length == 1 && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 50)
+                        ;
+                }
+            });
+        }
+ 
+
+        
         //&& Game.rooms[this.pos.roomName].controllerContainers().filter(function (r) { return r.id == structure.id }).length == 0
         
     }
@@ -109,9 +138,7 @@ RoomPosition.prototype.getEnergyDropTarget = function () {
 
 
 
-    if (target) {
-        return target;
-    }
+    if (target) {return target; }
     return this.findClosestByRange(FIND_STRUCTURES, {
         filter: (structure) => {
             return ((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN|| structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 1)
@@ -151,7 +178,7 @@ RoomPosition.prototype.isNextToRoad = function () {
 
 
 RoomPosition.prototype.fnNoOfCreepsRequired = function () {
-    return 3;
+    return 2;
 };
 
 
@@ -236,8 +263,10 @@ RoomPosition.prototype.isBuildable = function () {
 };
 
 
-RoomPosition.prototype.isBoarder = function () {
-    return (this.x <= 1 || this.x >= 48 || this.y <= 1 || this.y >= 48);
+RoomPosition.prototype.isBoarder = function (offset) {
+    if (!offset) (offset = 0)
+
+    return (this.x <= 1 + offset || this.x >= 48 - offset || this.y <= 1 + offset  || this.y >= 48 - offset);
 };
 
 
