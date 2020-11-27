@@ -5,14 +5,8 @@ Room.prototype.startUp = function () {
     this.log('startUp() is now processing. isPrimaryRoom: ' + this.isPrimaryRoom()
         + ";energyAvailable: " + this.energyAvailable
         + ";energyCapacityAvailable: " + this.energyCapacityAvailable
-        , LogLevel.INFO);
+        , LogLevel.ALWAYS);
 
-    // Setup memory objects
-    if (this.memory.roomInit == null) {
-        this.newRoow();
-    }
-
-    //this.memory.MinWallHitPoint = params.DEFAULT_WALL_HITPOINT;
     /* Stats
     */
     // buildStats(this);
@@ -20,30 +14,28 @@ Room.prototype.startUp = function () {
 
     if (this.isUnderAttack()) {
         this.log("UNDER ATTACK", LogLevel.ALWAYS);
-        // console.log(this.findMainSpawns())
-        // console.log(this.findMainSpawns().spawning)
-        // if (this.findMainSpawns().spawning) {
-        //     console.log(this.findMainSpawns().spawning)
-        //     //this.findMainSpawns().spawning.cancel()
-        // }
 
-        if (this.energyAvailable >= 600) {
-            let opt = {
-                Memory: { guardRoom: this.name }
-            }
-            spawnCreep(Role.GUARDIAN, this, opt)
+        /** ask for help */
+        if (!Memory.rapidResponseGuardianQueue.includes(this.name)
+            && _(Game.creeps).filter(
+                {
+                    memory: {
+                        role: Role.GUARDIAN
+                        , guardRoom: this.name
+                    }
+
+                }).value().length == 0) {
+            Memory.rapidResponseGuardianQueue.push(room)
         }
-
     }
+
 
     this.roomStage();
     /* Exit if not primary
     */
     if (this.isPrimaryRoom() == false) { return };
 
-    
-    
-    
+
 
     // let c = Game.getObjectById("9e9507fbcc748d8")
     // console.log("getRepairAt-" + c.getRepairAt())//.Creep)
@@ -59,7 +51,48 @@ Room.prototype.startUp = function () {
 
     // console.log(this.controllerContainers())
 
-    /* spamn creeps - rapid recovery protocol  
+    this.rapidGuardianSpawning()
+    this.rapidRecoverySpawning()
+    this.plan()
+    this.bauSpawning()
+    if (this.roomStage() >= RoomStage.OUTPOST) {
+        this.reconFromHere();
+        this.remoteMining();
+    }
+
+    baseBuilder(this);
+
+
+};
+
+Room.prototype.rapidGuardianSpawning = function () {
+    if (!Memory.rapidResponseGuardianQueue) { Memory.rapidResponseGuardianQueue = []; return }; // init queue
+    if (Memory.rapidResponseGuardianQueue.length == 0) { return } // no Response required
+
+    if (this.energyAvailable < config.rapidGuardian.minBodySize) { return }
+    if (this.findMainSpawns().getRoleOfCreepSpawning() && this.findMainSpawns().getRoleOfCreepSpawning() !== Role.GUARDIAN) {
+        this.findMainSpawns().Spawning.cancel()
+    };
+
+    let room = Memory.rapidResponseGuardianQueue.shift()
+
+
+    let opt = {
+        Memory: { guardRoom: room }
+        , maxBodySize: config.rapidGuardian.maxBodySize
+    }
+    let spawnOutCome = spawnCreep(Role.GUARDIAN, this, opt);
+    if (spawnOutCome == OK) { return }
+    else {
+        // failed
+        Memory.rapidResponseGuardianQueue.push(room)
+    }
+
+}
+
+
+Room.prototype.rapidRecoverySpawning = function () {
+    /* spawn creeps - rapid recovery protocol  
     */
     if (this.creepsInRole(Role.WORKER) == 0 && this.energyAvailable >= 300) {
         spawnCreep(Role.WORKER, this);
@@ -67,8 +100,7 @@ Room.prototype.startUp = function () {
 
     if (this.creepsInRole(Role.CARRIER) == 0
         && this.energyAvailable >= 600
-        && this.storage 
-        && this.storage.store[RESOURCE_ENERGY] > 0 ) {
+        && this.storageReserve() > 0) {
         spawnCreep(Role.CARRIER, this)
     }
 
@@ -78,13 +110,16 @@ Room.prototype.startUp = function () {
         spawnCreep(Role.CARRIER, this)
     }
 
-    /** bau spawn */
+
+}
+
+Room.prototype.bauSpawning = function () {
     if (!this.findMainSpawns().isBusy()) {
         for (i in config.Roles) {
             let role = config.Roles[i];
-            let maxBodyCost = config.Roles[i].maxbodyCost
+            let maxBodyCost = config.Roles[i].maxBodyCost
             if (!maxBodyCost) { maxBodyCost = this.energyCapacityAvailable }
-            if (this.energyAvailable < maxBodyCost ) {
+            if (this.energyAvailable < maxBodyCost) {
                 continue
             }
             this.log("Role: " + role.roleName + ';', LogLevel.DEBUG);
@@ -103,51 +138,7 @@ Room.prototype.startUp = function () {
             + "; energyAvailable: " + this.energyAvailable
             + "; energyAvailable: " + this.energyCapacityAvailable, LogLevel.DEBUG)
     }
-
-
-    if (this.roomStage() >= RoomStage.OUTPOST){ 
-        this.remoteMining();
-    }
-    baseBuilder(this);
-    this.plan()
-
-
-    
-
-
-    /* Near by room
-    */
-
-    // if (this.controller.level > 4 ) {
-    //     if (!Memory.Queue_ReconRoom){ Memory.Queue_ReconRoom = []; }
-    //     if (!Memory.Rooms){ Memory.Rooms = []; }
-    //     let adjacentRooms = Game.map.describeExits(this.name);
-    //     console.log(Memory.Queue_ReconRoom)
-    //     for (i in adjacentRooms) {
-    //         let nextRoomName = adjacentRooms[i];
-    //         let nextRoom = Game.rooms[nextRoomName];
-    //         if (Memory.Rooms.includes(nextRoom)){
-    //             this.log("Known Room",LogLevel.ALWAYS)
-    //         }
-    //         console.log(nextRoomName);
-    //         console.log(nextRoom);
-    //         if (!Memory.Queue_ReconRoom.includes(nextRoomName)){
-    //             Memory.Queue_ReconRoom.push(nextRoomName)  
-    //         };
-
-    //     }
-    //     //console.log(Game.creeps.filter(function(c) { return c.memory.role == Role.RECON})
-    // }
-
-
-    //Memory.Queue_ReconRoom.push("end")
-    // console.log(Memory.Queue_ReconRoom.includes("end"))
-    // console.log(Memory.Queue_ReconRoom.includes("endboo"))
-
-    //console.log(Memory.Queue_ReconRoom.shift())
-
-};
-
+}
 
 
 
@@ -159,29 +150,18 @@ spawnCreep = function (role, room, opt) {
     if (config.Room.Spawning.Allow) {
         spawn.spawnRequested = true;
         let r = spawn.spawnCreep(
-            utils.shuffleArray(creepSpawnData.body), 
-            creepSpawnData.name, 
+            utils.shuffleArray(creepSpawnData.body),
+            creepSpawnData.name,
             { memory: creepSpawnData.memory });
         if (r = 0) {
             room.log("Outcome = " + r + '; ' + JSON.stringify(creepSpawnData), LogLevel.INFO)
         } else {
             room.log("Outcome = " + r + '; ' + JSON.stringify(creepSpawnData), LogLevel.ERROR)
         }
+        return r
     }
+    
 }
-
-
-Room.prototype.newRoow = function () {
-    this.log("new room - set memory defaults", LogLevel.ALWAYS);
-    this.memory.roomInit = true;
-    this.memory.ALLOW_HAVESTER = true;
-
-    this.memory.NumberOf_Target_CARRIER = 0;
-    this.memory.NumberOf_Target_MINER = 2;
-    this.memory.NumberOf_Target_WORKER = 10;
-    this.memory.NumberOf_Min_WORKER = 2;
-    this.memory.MinWallHitPoint = params.DEFAULT_WALL_HITPOINT;
-};
 
 
 

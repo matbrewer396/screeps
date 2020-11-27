@@ -178,7 +178,7 @@ RoomPosition.prototype.isNextToRoad = function () {
 
 
 RoomPosition.prototype.fnNoOfCreepsRequired = function () {
-    return 2;
+    return 1;
 };
 
 

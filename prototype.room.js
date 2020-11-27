@@ -1,11 +1,3 @@
-//const LogLevel = params.LogLevel;
-
-
-// Room.prototype.creeps;
-// Room.prototype.sources;
-// Room.prototype.noOfSources;
-// Room.prototype.noOfCarrier;
-
 
 Room.prototype.isPrimaryRoom = function () {
     var primaryRoom;
@@ -283,6 +275,12 @@ Room.prototype.heathyStorageReserve = function () {
     
 }
 
-
+Room.prototype.storageReserve = function () {
+    if (this.storage){
+        return this.storage.store[RESOURCE_ENERGY];
+    } else {
+        return 0;
+    }
+}
 
 

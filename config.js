@@ -8,7 +8,7 @@ global.config = {
     },
     LogOverRide: {
         Room: "",
-        Creep: "GUARDIAN_4285", // MINER_3532
+        Creep: "RECON_2367", // MINER_3532
         StructureSpawn: "",
     },
 
@@ -66,7 +66,7 @@ global.config = {
             renewAt: 200,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
-            maxbodyCost: 650, // 6 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
+            maxBodyCost: 650, // 6 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
         },
         {
             roleName: "carrier",
@@ -89,8 +89,21 @@ global.config = {
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300
-        }
+        },
+        {
+            roleName: Role.RECON,
+            tickBeforeReview: 60,
+            renewAt: 0,
+            enforeMaxNoOfCreepReviewAtOnce: true,
+            overRideReviewAtOnceIfLiveLessThen: 300
+        },
+
+        
+
     ],
+
+
+
 
     RoadNetwork: {
         Build: false,
@@ -98,6 +111,9 @@ global.config = {
     Sources: {
         ReviewEvery: 1000,
         ReviewEveryOnFailure: 100,
+    },
+    recon: {
+        searchLevel: 2
     },
 
     Repair: {

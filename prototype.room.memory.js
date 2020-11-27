@@ -36,5 +36,6 @@ Room.prototype.addRemoteSource = function (newSource) {
     } else if(this.isRemoteSourceKnown(newSource)) {
         return
     }
+    this.log("New remote minding source add: " + JSON.stringify(newSource))
     this.memory.remoteSources.push(newSource);
 }

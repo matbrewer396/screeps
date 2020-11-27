@@ -8,6 +8,7 @@ global.Role = {
     , RECON: "recon"
     , HARVESTER: "harvester"
     , GUARDIAN: "guardian"
+    , RECON: "recon"
 };
 
 global.CreepTasks = {
@@ -32,6 +33,8 @@ global.CreepTasks = {
     ATTACKING:"ATTACKING",
     HEALING:"HEALING",
     MOVING:  "MOVING"
+
+    // Recon
 }
 
 

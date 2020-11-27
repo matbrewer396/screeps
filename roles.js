@@ -5,6 +5,7 @@ let creepLogic = {
     carrier: require('role.carrier'),
     harvester: require('role.harvester'),
     guardian : require('role.guardian'),
+    recon : require('role.recon'),
 }
 
 module.exports = creepLogic;

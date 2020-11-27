@@ -6,7 +6,9 @@ require('utils');
 require('helper.Creep.Spawn');
 require('helper.Room.BaseBuilder');
 require('helper.Room.RemoteMining');
+require('helper.nav');
 require('prototype.StructureSpawn');
+
 
 require('prototype.game');
 require('prototype.room');
@@ -14,6 +16,7 @@ require('prototype.room.startup');
 require('prototype.room.memory');
 require('prototype.room.find');
 require('prototype.room.planner');
+
 
 
 require('prototype.StructureTower');
@@ -26,6 +29,7 @@ require('prototype.RoomPosition');
 require('prototype.Structure');
 
 require('Command');
+require('RoomReconData');
 
 
 

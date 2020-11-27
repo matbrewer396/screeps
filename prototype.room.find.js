@@ -27,6 +27,7 @@ Room.prototype.findFreeSpawns = function (creep) {
     })
 }
 
+
 Room.prototype.findUpgradeControllerWithSpace = function (creep) {
     return this.controllerContainers().filter(
         function (c) {
@@ -48,6 +49,12 @@ Room.prototype.findMyContainers = function () {
 Room.prototype.findMyExtension = function () {
     return this.find(FIND_MY_STRUCTURES, { filter: { structureType: STRUCTURE_EXTENSION } })
 }
+
+Room.prototype.findKeeperLair = function () {
+    return this.find(FIND_STRUCTURES, { filter: { structureType: STRUCTURE_KEEPER_LAIR } })
+}
+
+
 
 Room.prototype.findConstructionSites = function () {
     return this.find(FIND_CONSTRUCTION_SITES)

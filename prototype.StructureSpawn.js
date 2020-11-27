@@ -15,3 +15,11 @@ StructureSpawn.prototype.isBusy = function (creep) {
     }
 };
 
+
+
+StructureSpawn.prototype.getRoleOfCreepSpawning = function() {
+    if (!this.spawning) { return } // not spwaning
+    let creepName = this.spawning.name
+    return Memory.creeps[creepName].role
+
+}

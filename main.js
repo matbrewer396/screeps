@@ -19,7 +19,7 @@ function processRooms() {
         try {
             room.startUp();
         } catch (error) {
-            console.log("ERROR! room.startUp();" + error.message);
+            console.log("ERROR! room.startUp();" + error.stack);
         // or log remotely
         } finally {
         // clean up
@@ -45,7 +45,7 @@ function processRooms() {
             try {
                 towers[tower].run();
             } catch (error) {
-                console.log("ERROR! Tower.run()" + error.message);
+                console.log("ERROR! Tower.run()" + error.stack);
             // or log remotely
             } finally {
             // clean up

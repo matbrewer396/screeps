@@ -12,8 +12,8 @@ Creep.prototype.review = function (force) {
     bodyCode = this.getBodyCost();
     var maxBodySize = Game.rooms[Memory.primaryRoom].energyCapacityAvailable
 
-    if (this.getRoleConfig().maxbodyCost <= maxBodySize) {
-        maxBodySize = this.getRoleConfig().maxbodyCost
+    if (this.getRoleConfig().maxBodyCost <= maxBodySize) {
+        maxBodySize = this.getRoleConfig().maxBodyCost
     }
     
     /**
@@ -21,8 +21,9 @@ Creep.prototype.review = function (force) {
      */
     if (this.getBodyCost() < maxBodySize - 150) { // 150 allow for rounding
         // Disable to allow new model to be created
-        this.memory.AllowRenewing = false;
+        
         this.log("Old Model - BodyCode: " + this.getBodyCost() + "; maxBodySize: " +maxBodySize-150 ,LogLevel.ALWAYS)
+        this.recycle()
     } else {
         this.memory.AllowRenewing = true;
     }
@@ -142,6 +143,11 @@ Creep.prototype.review = function (force) {
         /* Handles recycling
         */
         var spawn = this.room.find(FIND_MY_SPAWNS)[0];
+        if (!spawn) {
+            this.log("No spawn in room", LogLevel.INFO)
+            this.moveToRoom(nav.findClosetMyRoom(this))
+            return
+        }
         var r = spawn.recycleCreep(this);
         this.log("Recycling - " + this.name + ' - ' + r, LogLevel.INFO)
         if (r == ERR_NOT_IN_RANGE) {
@@ -155,4 +161,10 @@ Creep.prototype.review = function (force) {
         this.memory.tickBeforeReview = this.getRoleConfig().tickBeforeReview;
         return false;
     }
+}
+
+Creep.prototype.recycle = function () {
+    this.memory.recycle = true
+    this.memory.tickBeforeReview = 0 
+    this.memory.AllowRenewing = false;
 }

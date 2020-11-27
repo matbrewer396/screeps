@@ -40,7 +40,7 @@ var roleGuardian = {
             energyAvailable = opt.maxBodySize
         }
         
-        body = fnBuildBody(body, [MOVE, ATTACK, MOVE, TOUGH, MOVE, ATTACK, MOVE, TOUGH, RANGED_ATTACK], energyAvailable);
+        body = fnBuildBody(body, [MOVE, ATTACK, MOVE, TOUGH, MOVE, ATTACK, MOVE, TOUGH, RANGED_ATTACK, MOVE], energyAvailable);
         room.log("Spwaming new workder - " + name + ' body: ' + body.toString(), LogLevel.DEBUG);
         return { name, body, memory };
 

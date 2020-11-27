@@ -62,8 +62,8 @@ var roleMiner = {
         };
         let energyAvailable = room.energyAvailable - 50;
         body.push(MOVE)
-        if (myConfig.maxbodyCost -50 <= energyAvailable) {
-            energyAvailable = myConfig.maxbodyCost -50
+        if (myConfig.maxBodyCost -50 <= energyAvailable) {
+            energyAvailable = myConfig.maxBodyCost -50
         }
         
         body = fnBuildBody(body, [WORK],energyAvailable);
