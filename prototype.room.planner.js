@@ -293,7 +293,7 @@ Room.prototype.addRoadToPlan = function (newPos) {
         return 
 
     };
-    if (newPos.isBoarder()) {return}
+    if (newPos.isBoarder(-1)) {return}
     let planSite = {
         pos: newPos,
         structureType: STRUCTURE_ROAD,

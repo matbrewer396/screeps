@@ -57,8 +57,9 @@ Room.prototype.startUp = function () {
 
     // console.log(this.controllerContainers())
 
-    this.rapidGuardianSpawning()
+    
     this.rapidRecoverySpawning()
+    if (this.isHealthy()) {this.rapidGuardianSpawning()}
     this.plan()
     this.bauSpawning()
     if (this.roomStage() >= RoomStage.OUTPOST) {

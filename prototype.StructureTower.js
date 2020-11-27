@@ -10,10 +10,7 @@ StructureTower.prototype.run = function () {
     /* Repair
     */
     var closestDamagedStructure = this.pos.findInRange(FIND_STRUCTURES, 6,{
-        filter: (s) => ((s.structureType != STRUCTURE_WALL && s.structureType != STRUCTURE_RAMPART
-            && s.hits < s.hitsMax)
-            || (s.structureType == STRUCTURE_WALL && s.hits < this.room.memory.MinWallHitPoint)
-            || (s.structureType == STRUCTURE_RAMPART && s.hits < this.room.memory.MinWallHitPoint))
+        filter: (s) => (s.getHealthPercentage() < s.getRepairAt().Tower)
     })[0];
 
     if (closestDamagedStructure) {

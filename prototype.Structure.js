@@ -16,35 +16,47 @@ Object.defineProperty(Structure.prototype, 'memory', {
 });
 
 Structure.prototype.getHealthPercentage = function () {
-  return (this.hits / this.hitsMax);
+  return (this.hits / this.hitsMax) * 100;
 };
 
 
-Structure.prototype.getRepairAt = function () {
-  
+
+Structure.prototype.getRepairConfig = function () {
   let roomLvl = this.room.controller.level;
+  structureType = this.structureType;
+
   /** look for setting for this level  */
   let c = config.Room.Repair.filter(
     function (c) {
-      return c.Objects.includes(this.structureType) && c.RoomLevel == roomLvl
+      return c.Objects.includes(structureType) && c.RoomLevel == roomLvl
     }
   )[0]
-  if (c) { return c.StartAt };
-
-  console.log(this.room.controller.level)
-  console.log(this.structureType)
+  if (c) { return c };
 
   /** look for setting for level before  */
   c = config.Room.Repair.filter(
     function (c) {
-      console.log( c.RoomLevel + '-' + roomLvl)
-      return c.Objects.includes(this.structureType) && c.RoomLevel <= roomLvl
+      return c.Objects.includes(structureType) && c.RoomLevel <= roomLvl
+    }
+  ).sort(function(a, b){return b.RoomLevel - a.RoomLevel})[0]
+  if (c) { return c };
+
+  /** look for setting for level before  */
+  c = config.Room.Repair.filter(
+    function (c) {
+      return c.Objects.includes("all") && c.RoomLevel <= roomLvl
     }
   )[0]
-  if (c) { return c.StartAt };
+  if (c) { return c };
 
+  return {};
+};
 
-  return;
+Structure.prototype.getRepairAt = function () {
+  return this.getRepairConfig().StartAt;
+};
+Structure.prototype.getRepairUpTo = function () {
+  return this.getRepairConfig().Upto;
 };
 
 

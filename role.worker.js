@@ -57,7 +57,7 @@ var roleWorker = {
             return
         }
 
-        creep.log("Working on" + workerTarget.structureType, LogLevel.DEBUG);
+        creep.log("Working on " + workerTarget.structureType, LogLevel.DEBUG);
 
         if (creep.getTask() == CreepTasks.BUILD) {
             creep.log("Building", LogLevel.DEBUG);
@@ -69,13 +69,17 @@ var roleWorker = {
             creep.log("upgradeRoomController", LogLevel.DEBUG);
             creep.upgradeRoomController();
         } else if (creep.getTask() == CreepTasks.REPAIRER) {
-            creep.log("repair", LogLevel.DEBUG);
-            if (workerTarget.hitsMax == workerTarget.hits
-                || (workerTarget.structureType == STRUCTURE_RAMPART && workerTarget.hits > creep.room.repairWallLess() + 2000)
-            ) {
+            creep.log("repair. getRepairUpTo:" 
+                + workerTarget.getRepairUpTo() 
+                + "; getHealthPercentage:" 
+                + workerTarget.getHealthPercentage(), LogLevel.DEBUG);
+            if (workerTarget.getRepairUpTo() <= workerTarget.getHealthPercentage()){
+                //creep.log(workerTarget.hits + ' - ' + workerTarget.hitsMax + ' - ' + workerTarget.hitsMax * creep.getRoleConfig().repairStructuresAtHealthPercentage / 100, LogLevel.DEBUG);
                 creep.taskCompleted();
+                workerTarget = null;
+                
             }
-            creep.log(workerTarget.hits + ' - ' + workerTarget.hitsMax + ' - ' + workerTarget.hitsMax * creep.getRoleConfig().repairStructuresAtHealthPercentage / 100, LogLevel.DEBUG);
+            
             if (creep.repair(workerTarget) == ERR_NOT_IN_RANGE) {
                 creep.moveTo(workerTarget, { visualizePathStyle: { stroke: '#ffffff' } });
             };
@@ -120,7 +124,7 @@ function assignWork(creep) {
      *  Repair Neext builing
      */
     var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
-        filter: (s) => s.hits < (s.hitsMax *0.9)
+        filter: (s) => s.getHealthPercentage() < s.getRepairAt().Creep
             // (s.hitsMax * creep.getRoleConfig().repairStructuresAtHealthPercentage / 100)
             // && s.structureType != STRUCTURE_WALL
             // && s.structureType != STRUCTURE_RAMPART)

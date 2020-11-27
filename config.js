@@ -8,7 +8,7 @@ global.config = {
     },
     LogOverRide: {
         Room: "",
-        Creep: "GUARDIAN_1790", // MINER_3532
+        Creep: "WORKER_2041", // MINER_3532
         StructureSpawn: "",
     },
 
@@ -166,25 +166,32 @@ global.config = {
         //STRUCTURE_SPAWN  , STRUCTURE_EXTENSION  , STRUCTURE_ROAD  , STRUCTURE_WALL  , STRUCTURE_RAMPART  , STRUCTURE_KEEPER_LAIR  , STRUCTURE_PORTAL  , STRUCTURE_CONTROLLER  , STRUCTURE_LINK  , STRUCTURE_STORAGE  , STRUCTURE_TOWER  , STRUCTURE_OBSERVER  , STRUCTURE_POWER_BANK  , STRUCTURE_POWER_SPAWN  , STRUCTURE_EXTRACTOR  , STRUCTURE_LAB  , STRUCTURE_TERMINAL  , STRUCTURE_CONTAINER  , STRUCTURE_NUKER  , STRUCTURE_FACTORY  , STRUCTURE_INVADER_CORE
         Repair: [
             {
-                Objects: [STRUCTURE_CONTAINER, STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_ROAD, STRUCTURE_TOWER],
-                RoomLevel: 1,
+                Objects: ["all"],
+                RoomLevel: 0,
                 Upto: 100,
                 StartAt: {
-                    Tower: 100,
+                    Tower: 98,
                     Creep: 90,
-                }
+                },
 
             },
             {
-                //1 hit ramp(10,000,000) 0.0000001, 30 hit wall(300,000,00) 0.0000001 
                 Objects: [STRUCTURE_WALL, STRUCTURE_RAMPART],
                 RoomLevel: 1,
-                Upto: 25,
+                Upto: 0.00042,
                 StartAt: {
-                    Tower: 0.001, // 10k
-                    Creep: 0.0008, // 8k
-                }
-
+                    Tower: 0.0004, // 12k at RCL 2
+                    Creep: 0.00038, // 8k
+                },
+            },
+            {
+                Objects: [STRUCTURE_WALL, STRUCTURE_RAMPART],
+                RoomLevel: 4,
+                Upto: 0.48,
+                StartAt: {
+                    Tower: 0.4, // 12k at RCL 2
+                    Creep: 0.38, // 8k
+                },
             },
 
 

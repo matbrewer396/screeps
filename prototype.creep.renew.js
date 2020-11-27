@@ -23,7 +23,7 @@ Creep.prototype.review = function (force) {
         // Disable to allow new model to be created
         
         this.log("Old Model - BodyCode: " + this.getBodyCost() + "; maxBodySize: " +maxBodySize-150 ,LogLevel.ALWAYS)
-        this.recycle()
+        this.memory.AllowRenewing = false;
     } else {
         this.memory.AllowRenewing = true;
     }
