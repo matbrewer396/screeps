@@ -158,7 +158,10 @@ spawnCreep = function (role, room, opt) {
     room.log(JSON.stringify(creepSpawnData), LogLevel.ALWAYS)
     if (config.Room.Spawning.Allow) {
         spawn.spawnRequested = true;
-        let r = spawn.spawnCreep(creepSpawnData.body, creepSpawnData.name, { memory: creepSpawnData.memory });
+        let r = spawn.spawnCreep(
+            utils.shuffleArray(creepSpawnData.body), 
+            creepSpawnData.name, 
+            { memory: creepSpawnData.memory });
         if (r = 0) {
             room.log("Outcome = " + r + '; ' + JSON.stringify(creepSpawnData), LogLevel.INFO)
         } else {
