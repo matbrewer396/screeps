@@ -61,7 +61,7 @@ var roleRecon = {
     },
      /** @param {Room} room **/
     noRequiredCreep: function(room) {
-        if (Memory.reconRoomQueue.length > 0 && _.filter(Game.creeps, {memory: {role: Role.RECON}} ).length == 0){
+        if (Memory.reconRoomQueue && Memory.reconRoomQueue.length > 0 && _.filter(Game.creeps, {memory: {role: Role.RECON}} ).length == 0){
             return 1 
         } else {
             return 0

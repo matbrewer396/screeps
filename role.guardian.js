@@ -10,6 +10,7 @@ var roleGuardian = {
 
         if (creep.isInjured()) {
             creep.healMe()
+            return
             // go to near healer
         }
 

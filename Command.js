@@ -11,6 +11,7 @@ global.Command = class Command {
         console.log(JSON.stringify(creep))
         Memory.creeps[creepName].recycle = true
         Memory.creeps[creepName].tickBeforeReview = 0 
+        // creep.recycle()
         return console.log("Recycling " + creep);
     }
 }

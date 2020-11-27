@@ -8,7 +8,7 @@ global.config = {
     },
     LogOverRide: {
         Room: "",
-        Creep: "RECON_2367", // MINER_3532
+        Creep: "GUARDIAN_1790", // MINER_3532
         StructureSpawn: "",
     },
 
@@ -102,7 +102,10 @@ global.config = {
 
     ],
 
-
+    rapidGuardian: {
+        maxBodySize: 770,
+        minBodySize: 670,
+    },
 
 
     RoadNetwork: {

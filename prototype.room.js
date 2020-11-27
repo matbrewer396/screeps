@@ -188,7 +188,7 @@ Room.prototype.roomStage = function () {
 Room.prototype.isUnderAttack = function () {
     return this.find(FIND_HOSTILE_CREEPS, {
         filter: function (s) {
-            return !s.hits > 0
+            return s.hits > 0
         }
     }).length !== 0
 }

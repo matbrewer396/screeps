@@ -5,11 +5,16 @@ Room.prototype.startUp = function () {
     this.log('startUp() is now processing. isPrimaryRoom: ' + this.isPrimaryRoom()
         + ";energyAvailable: " + this.energyAvailable
         + ";energyCapacityAvailable: " + this.energyCapacityAvailable
+        + ";isUnderAttack: " + this.isUnderAttack()
         , LogLevel.ALWAYS);
 
     /* Stats
     */
     // buildStats(this);
+
+    // if (this.name = "W6N4") {
+    //     console.log(this.find)
+    // }
 
 
     if (this.isUnderAttack()) {
@@ -17,6 +22,7 @@ Room.prototype.startUp = function () {
 
         /** ask for help */
         if (!Memory.rapidResponseGuardianQueue.includes(this.name)
+            && this.findKeeperLair().length == 0
             && _(Game.creeps).filter(
                 {
                     memory: {
@@ -25,7 +31,7 @@ Room.prototype.startUp = function () {
                     }
 
                 }).value().length == 0) {
-            Memory.rapidResponseGuardianQueue.push(room)
+            Memory.rapidResponseGuardianQueue.push(this.name)
         }
     }
 

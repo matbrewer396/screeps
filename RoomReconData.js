@@ -18,6 +18,10 @@ Room.prototype.reconFromHere = function () {
     // console.log("reconData:" + JSON.stringify(Memory.reconData))
     // console.log("reconRoomQueue:" + JSON.stringify(Memory.reconRoomQueue))
 
+    if (!Memory.reconData) {
+        return
+    }
+
     let rooms = Memory.reconData.filter(function name(d) {
         return !d.hasHostile
             && d.keeperLair.length == 0
@@ -92,6 +96,7 @@ class RoomReconData {
     }
 
     static hasBeen(roomName) {
+        if(!Memory.reconData) {return false }
         return Memory.reconData.filter(function (r) {
             return r.roomName == roomName
         }).length > 0
@@ -129,3 +134,5 @@ class RoomReconData {
     }
 
 }
+
+module.exports = RoomReconData;
