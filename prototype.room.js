@@ -11,22 +11,6 @@ Room.prototype.isPrimaryRoom = function () {
 
 Room.prototype.controllerContainers = function () {
     return this.controller.pos.getContainersRightNextTo();
-    // var container = Game.getObjectById(this.memory.controllerContainers);
-
-    // if (container !== null){
-    //     this.log("By memory" + container, LogLevel.DETAILED);
-    //     return container;
-    // }
-
-    // container = this.controller.pos.getContainerRightNextTo();
-    // this.log("By findContainerRightNextTo" + container, LogLevel.DEBUG);
-    // if (!container) {
-    //     return ({id:-1});
-    // } else {
-    //     this.log("site: " + container, LogLevel.DEBUG);
-    //     this.memory.controllerContainer = container.id;
-    //     return container;
-    // }
 }
 
 

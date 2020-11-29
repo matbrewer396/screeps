@@ -2,20 +2,32 @@
 require('require');
 const LogLevel = {NOTHING: 0,INFO: 1, DEBUG: 2}
 
-module.exports.loop = function () {
+const profiler = require('screeps-profiler');
+
+// This line monkey patches the global prototypes.
+profiler.enable();
+module.exports.loop = function() {
+  profiler.wrap(function() {
     console.log("start loop");
+    Game.map.visual.import(Memory.MapVisualData);
     cleanMemory();
     processRooms();
+    Memory.MapVisualData = Game.map.visual.export();
+  });
 }
 
+
 function processRooms() {
+    
     for (var name in Game.rooms) {
         var room = Game.rooms[name];
-
         if (Memory.primaryRoom == null) {
             Memory.primaryRoom = room.name;    
             console.log('Settings primary room: ' +  room.name);
         }
+
+
+
         try {
             room.startUp();
         } catch (error) {
@@ -24,7 +36,6 @@ function processRooms() {
         } finally {
         // clean up
         }
-        
         /* process creeps
         */
         for (var name in room.find(FIND_MY_CREEPS)) {

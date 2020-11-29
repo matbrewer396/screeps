@@ -1,3 +1,5 @@
+var myRole = Role.UPGRADER
+var myConfig = config.Roles.filter(function (r) { return r.roleName == myRole })[0]
 var roleUpgrader = {
 
     /** @param {Creep} creep **/
@@ -67,7 +69,7 @@ var roleUpgrader = {
             return
         }
 
-        return Math.round(room.controllerContainersEnergy() / 4500)
+        return Math.round(room.controllerContainersEnergy() / myConfig.ratioControllerContainersEnergy)
     }
 };
 

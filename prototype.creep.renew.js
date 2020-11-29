@@ -1,3 +1,56 @@
+Creep.prototype.handleRenewCreepOutCome = function (outcome,spawn,allowRecall) {
+    this.log("Renewing outcome - " + r, LogLevel.INFO)
+    if (outcome == OK) {
+        spawn.renewRequested = true
+        return true;
+    } else if (outcome == ERR_NOT_IN_RANGE) {
+        this.setTask(CreepTasks.RENEWING_MOVING_TO_SPAWN);
+        this.moveTo(spawn);
+        if (this.pos.getRangeTo(spawn) <= 1 && allowRecall){
+            outcome = spawn.renewCreep(this)
+            return this.handleRenewCreepOutCome(outcome,spawn,false)
+        }
+        return true;
+    } else if (outcome == ERR_FULL) {
+        this.memory.renewing = false;
+        this.memory.tickBeforeReview = this.getRoleConfig().tickBeforeReview;
+        this.log("Renewal complete", LogLevel.INFO)
+        return false;
+    } else if (outcome == ERR_NOT_ENOUGH_ENERGY) {
+        if (this.store[RESOURCE_ENERGY] > 0) {
+            this.transfer(spawn, RESOURCE_ENERGY)
+            if (allowRecall){
+                outcome = spawn.renewCreep(this)
+                return this.handleRenewCreepOutCome(outcome,spawn,false)
+            }
+            return true;
+        }
+        let retryIn = config.Creep.Renew.TickBeforeRetry
+        if (this.ticksToLive < retryIn) {
+            if (this.ticksToLive < config.Creep.Renew.LastHopeProtocol) {
+                var r = spawn.recycleCreep(this);
+                this.log("Recycling as last hoper outcome: " + r, LogLevel.ERROR)
+                return true
+            } else {
+                retryIn = this.ticksToLive - config.Creep.Renew.LastHopeProtocol
+            }
+        }
+        this.memory.renewing = false;
+        this.memory.tickBeforeReview = retryIn;
+        this.log("Spawn out of e", LogLevel.INFO)
+        return false;
+    } else if (outcome == ERR_BUSY) {
+        spawn = this.room.findFreeSpawns(this)[0];
+        if (spawn && allowRecall){
+            outcome = spawn.renewCreep(this)
+            return this.handleRenewCreepOutCome(outcome,spawn,false)
+        }
+        this.log("Spawn is busy", LogLevel.DEBUG)
+    } else {
+        this.log("Unhandled renewing outcome" + r, LogLevel.ERROR);
+    }
+}
+
 
 /**
  * Summary. Review creep should recycle or repair
@@ -19,7 +72,8 @@ Creep.prototype.review = function (force) {
     /**
      *  Old Model
      */
-    if (this.getBodyCost() < maxBodySize - 150) { // 150 allow for rounding
+    if (this.getBodyCost() < maxBodySize - 150 // 150 allow for rounding
+        && this.body.length !== 50) { 
         // Disable to allow new model to be created
         
         this.log("Old Model - BodyCode: " + this.getBodyCost() + "; maxBodySize: " +maxBodySize-150 ,LogLevel.ALWAYS)
@@ -72,12 +126,21 @@ Creep.prototype.review = function (force) {
         // }
 
         this.memory.renewing = true;
-        var spawn = this.room.findFreeSpawns(this)[0];
+        var spawns = this.room.findSpawns()
+        var spawn;
+        for (i in spawns) {
+            console.log(spawns[i])
+            if (!spawns[i].isBusy(this,true)) {
+                spawn = spawns[i]
+            }
+        }
+        
+        console.log(spawn + spawn.isBusy())
         /** No spawn in this room */
         if (!spawn) {
             this.log("No free spawn", LogLevel.INFO);
             if (force || this.getRoleConfig().blockSpawnRetryLater) {
-                this.log("Force set / role block - trying anyway ", LogLevel.DEBUG);
+                this.log("Force set / role block - trying anyway ", LogLevel.ALWAYS);
                 spawn = this.room.findMainSpawns();
             } else {
                 this.log("will return later", LogLevel.DEBUG);
@@ -86,6 +149,8 @@ Creep.prototype.review = function (force) {
             }
             
         }
+        console.log(this.room.findFreeSpawns(this,true))
+        console.log(spawn + spawn.isBusy())
 
         if (!spawn) {
             this.log("no spawn in this room", LogLevel.INFO);
@@ -94,51 +159,18 @@ Creep.prototype.review = function (force) {
         }
         
 
-        if (spawn && !this.pos.inRangeTo(spawn.pos,1)){
-            this.log("spwan not in range moving", LogLevel.INFO);
-            this.moveTo(spawn);
-            return true;
-        }
+        // if (spawn && !this.pos.inRangeTo(spawn.pos,1)){
+        //     this.log("spwan not in range moving", LogLevel.INFO);
+        //     this.moveTo(spawn);
+        //     return true;
+        // }
 
         this.setTask(CreepTasks.RENEWING);
         
 
 
         var r = spawn.renewCreep(this);
-        this.log("Renewing outcome - " + r, LogLevel.INFO)
-        if (r == OK) {
-            return true;
-        } else if (r == ERR_NOT_IN_RANGE) {
-            this.setTask(CreepTasks.RENEWING_MOVING_TO_SPAWN);
-            this.moveTo(spawn);
-            return true;
-        } else if (r == ERR_FULL) {
-            this.memory.renewing = false;
-            this.memory.tickBeforeReview = this.getRoleConfig().tickBeforeReview;
-            this.log("Renewal complete", LogLevel.INFO)
-            return false;
-        } else if (r == ERR_NOT_ENOUGH_ENERGY) {
-            if (this.store[RESOURCE_ENERGY] > 0) {
-                this.transfer(spawn, RESOURCE_ENERGY)
-                return true;
-            }
-            let retryIn = config.Creep.Renew.TickBeforeRetry
-            if (this.ticksToLive < retryIn) {
-                if (this.ticksToLive < config.Creep.Renew.LastHopeProtocol) {
-                    var r = spawn.recycleCreep(this);
-                    this.log("Recycling as last hoper outcome: " + r, LogLevel.ERROR)
-                    return
-                } else {
-                    retryIn = this.ticksToLive - config.Creep.Renew.LastHopeProtocol
-                }
-            }
-            this.memory.renewing = false;
-            this.memory.tickBeforeReview = retryIn;
-            this.log("Spawn out of e", LogLevel.INFO)
-            return false;
-        } else {
-            this.log("Unhandled renewing outcome" + r, LogLevel.ERROR);
-        }
+        return this.handleRenewCreepOutCome(r,spawn,true);
     } else if (this.memory.recycle) {
         /* Handles recycling
         */
@@ -168,3 +200,5 @@ Creep.prototype.recycle = function () {
     this.memory.tickBeforeReview = 0 
     this.memory.AllowRenewing = false;
 }
+
+

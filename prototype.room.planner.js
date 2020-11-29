@@ -1,11 +1,7 @@
 Room.prototype.plan = function () {
+    
     var processedPos = [];
-    let plannedSites = [];
-
-    // let MySites = this.find(FIND_MY_CONSTRUCTION_SITES)
-    // for (i in MySites){
-    //     MySites[i].remove()
-    // }
+    let beforeCpu = Game.cpu.getUsed();
 
 
     if (this.memory.plan) {
@@ -13,24 +9,17 @@ Room.prototype.plan = function () {
         let extensionsAllowed = CONTROLLER_STRUCTURES[STRUCTURE_EXTENSION][rcl] - this.findMyExtension().length
         let towersAllowed = CONTROLLER_STRUCTURES[STRUCTURE_TOWER][rcl] - this.findMyTowers().length
         let numberOfSites = this.findConstructionSites().length
-
-        console.log(this.findConstructionSites())
-        //console.log("Existing plan " +JSON.stringify(this.memory.plan))
         for (i in this.memory.plan) {
             let planedSite = this.memory.plan[i];
             let pos = new RoomPosition(planedSite.pos.x, planedSite.pos.y, this.name)
-
-
-
+            beforeCpu = Game.cpu.getUsed();
             // todo check structure is the same 
             if (pos.hasStructure()) { continue }
-
             if (config.Planner.ShowAll) {
                 planStructure(pos, planedSite.structureType, this, planedSite.opt)
             }
-
             if (rcl >= 1) {
-                if (planedSite.structureType == STRUCTURE_ROAD 
+                if (planedSite.structureType == STRUCTURE_ROAD
                     && planedSite.opt
                     //&& planedSite.opt.rcl >= rcl
                     && numberOfSites < 10
@@ -57,14 +46,12 @@ Room.prototype.plan = function () {
                     buildSite(pos, planedSite.structureType)
                 }
             }
-
             if (rcl >= 4) {
                 if (planedSite.structureType == STRUCTURE_STORAGE) {
                     planStructure(pos, planedSite.structureType, this)
                     buildSite(pos, planedSite.structureType)
                 }
             }
-
             /** build road around everything */
             // todo if swpam build anyways
             if (planedSite.structureType == STRUCTURE_ROAD
@@ -85,23 +72,36 @@ Room.prototype.plan = function () {
             numberOfSites += 1;
             let r = pos.createConstructionSite(structureType)
         }
-
-
-
-
+        this.setTaskToRenew("plan", config.Planner.ReviewEvery)
         return
     }
 
+    function planStructure(pos, StructureType, room, opt) {
+        processedPos.push(pos)
+        planStructureVisual(pos, StructureType, room, opt);
+    }
+
+}
+
+function planStructureVisual(pos, StructureType, room, opt) {
+    let lineStyle;
+    if (opt && opt.rcl == 1) {
+        lineStyle = "dashed"
+    }
+    room.visual.circle(pos, { fill: 'transparent', lineStyle: lineStyle, radius: 0.45, stroke: config.Planner.Visual[StructureType] })
+}
+
+Room.prototype.newPlan = function () {
+    var processedPos = [];
+    let plannedSites = [];
     /**
-     * Planner 
-     * Tower and store
-     * extension 
-     */
-    let aroundSpawn = this.findMainSpawns().pos.getNearByBuildablePositions();
+         * Planner 
+         * Tower and store
+         * extension 
+         */
     let storeSite = undefined;
 
 
-    var subPosition = [];
     let highTraffic = {
         rcl: 1
     }
@@ -237,63 +237,60 @@ Room.prototype.plan = function () {
                 continue;
             }
             planStructure(pos, STRUCTURE_ROAD, room, opt);
-            //processPositions(pos.getNearByBuildablePositions(), room, 1 )
         }
     }
 
-
     function planStructure(pos, StructureType, room, opt) {
         processedPos.push(pos)
-        let lineStyle;
-        if (opt && opt.rcl == 1) {
-            lineStyle = "dashed"
-        }
-        room.visual.circle(pos, { fill: 'transparent', lineStyle: lineStyle, radius: 0.45, stroke: config.Planner.Visual[StructureType] })
+        planStructureVisual(pos, StructureType, room, opt) 
         let planSite = {
             pos: pos,
             structureType: StructureType,
             opt: opt
         }
-
         plannedSites.push(planSite)
-        //containerSite.createConstructionSite(StructureType)
     }
+    
+
+    
 
 }
+
+
 
 
 Room.prototype.posHasPlan = function (newPos) {
     return this.memory.plan.filter(
         function (planedSite) {
-            return planedSite.pos.x == newPos.x && planedSite.pos.y == newPos.y 
+            return planedSite.pos.x == newPos.x && planedSite.pos.y == newPos.y
         }).length > 0
 }
 
 Room.prototype.posGetPlan = function (newPos) {
     return this.memory.plan.filter(
         function (planedSite) {
-            return planedSite.pos.x == newPos.x && planedSite.pos.y == newPos.y 
+            return planedSite.pos.x == newPos.x && planedSite.pos.y == newPos.y
         })[0]
 }
 
 Room.prototype.addRoadToPlan = function (newPos) {
-    if (this.posHasPlan(newPos)){ 
+    if (this.posHasPlan(newPos)) {
 
         if (this.memory.plan.filter(
             function (planedSite) {
-                return planedSite.pos.x == newPos.x && planedSite.pos.y == newPos.y 
+                return planedSite.pos.x == newPos.x && planedSite.pos.y == newPos.y
             })[0].structureType == STRUCTURE_ROAD) {
-                this.memory.plan.filter(
-                    function (planedSite) {
-                        return planedSite.pos.x == newPos.x && planedSite.pos.y == newPos.y 
-                    })[0].opt = {rcl: 4}
-            }
+            this.memory.plan.filter(
+                function (planedSite) {
+                    return planedSite.pos.x == newPos.x && planedSite.pos.y == newPos.y
+                })[0].opt = { rcl: 4 }
+        }
 
 
-        return 
+        return
 
     };
-    if (newPos.isBoarder(-1)) {return}
+    if (newPos.isBoarder(-1)) { return }
     let planSite = {
         pos: newPos,
         structureType: STRUCTURE_ROAD,
@@ -302,5 +299,5 @@ Room.prototype.addRoadToPlan = function (newPos) {
         },
     }
     this.memory.plan.push(planSite)
-    return 
+    return
 }

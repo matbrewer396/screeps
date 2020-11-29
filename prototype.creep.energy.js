@@ -203,6 +203,7 @@ Creep.prototype.dropOffEnergy = function () {
     var r = this.transfer(target, RESOURCE_ENERGY)
     if (r == OK) {
         this.log("Transferred", LogLevel.DEBUG)
+        this.taskCompleted()
     }
     else if (r == ERR_NOT_IN_RANGE) {
         this.moveTo(target, { visualizePathStyle: { stroke: '#ffffff' } });

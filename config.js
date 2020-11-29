@@ -1,6 +1,7 @@
 global.config = {
     /* Logging
     */
+    roomSummary: LogLevel.ALWAYS,
     LogLevel: {
         Room: LogLevel.NOTHING,
         Creep: LogLevel.NOTHING,
@@ -8,10 +9,18 @@ global.config = {
     },
     LogOverRide: {
         Room: "",
-        Creep: "WORKER_2041", // MINER_3532
+        Creep: "CARRIER_7429", // MINER_3532
         StructureSpawn: "",
     },
-
+    cpuProfiler: {
+        Enabled: true,
+        ShowAll: false,
+        High: {
+            1:2, // Process object
+            2:1, // Sub task
+            3:0.5,// function
+        }
+    },
     Creep: {
         Renew: {
             Allow: true,
@@ -54,11 +63,12 @@ global.config = {
             upgradeIfStorageOver: 200000
         },
         {
-            roleName: "upgrader",
+            roleName:  Role.UPGRADER,
             tickBeforeReview: 60,
             renewAt: 0,
             enforeMaxNoOfCreepReviewAtOnce: true,
-            overRideReviewAtOnceIfLiveLessThen: 300
+            overRideReviewAtOnceIfLiveLessThen: 300,
+            ratioControllerContainersEnergy: 4000 // controllerContainersEnergy / x
         },
         {
             roleName: "miner",
@@ -139,6 +149,7 @@ global.config = {
             7:80000,
             8:160000,
         },
+        ExcessiveStorageReserve: 800000,
         Stages: {
             ReviewEvery: 100
         },
@@ -200,6 +211,7 @@ global.config = {
 
     },
     Planner: {
+        ReviewEvery : 100,
         ShowAll: true,
         Visual: {
             Road: "navy",

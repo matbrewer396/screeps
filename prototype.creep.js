@@ -185,7 +185,7 @@ Creep.prototype.healMe = function () {
  */
 Creep.prototype.seekAndAttack = function () {
     let closestHostile = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-    this.log("Hostile- " + closestHostile, LogLevel.ALWAYS)
+    this.log("Hostile- " + closestHostile + "; Room: " + this.room.name, LogLevel.ALWAYS)
     if (closestHostile) {
         this.setTask(CreepTasks.ATTACKING)
         if (this.pos.getRangeTo(closestHostile.pos) <= 1) {

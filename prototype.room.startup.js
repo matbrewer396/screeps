@@ -6,7 +6,7 @@ Room.prototype.startUp = function () {
         + ";energyAvailable: " + this.energyAvailable
         + ";energyCapacityAvailable: " + this.energyCapacityAvailable
         + ";isUnderAttack: " + this.isUnderAttack()
-        , LogLevel.ALWAYS);
+        , config.roomSummary);
 
     /* Stats
     */
@@ -17,12 +17,11 @@ Room.prototype.startUp = function () {
     // }
 
 
-    if (this.isUnderAttack()) {
+    if (this.isUnderAttack()  && this.findKeeperLair().length == 0) {
         this.log("UNDER ATTACK", LogLevel.ALWAYS);
-
         /** ask for help */
         if (!Memory.rapidResponseGuardianQueue.includes(this.name)
-            && this.findKeeperLair().length == 0
+           
             && _(Game.creeps).filter(
                 {
                     memory: {
@@ -58,9 +57,10 @@ Room.prototype.startUp = function () {
     // console.log(this.controllerContainers())
 
     
-    this.rapidRecoverySpawning()
+    if(this.rapidRecoverySpawning()) { return }
     if (this.isHealthy()) {this.rapidGuardianSpawning()}
-    this.plan()
+    if (this.isTaskDueToStart("plan")) { this.plan() }
+    
     this.bauSpawning()
     if (this.roomStage() >= RoomStage.OUTPOST) {
         this.reconFromHere();
@@ -76,13 +76,15 @@ Room.prototype.rapidGuardianSpawning = function () {
     if (!Memory.rapidResponseGuardianQueue) { Memory.rapidResponseGuardianQueue = []; return }; // init queue
     if (Memory.rapidResponseGuardianQueue.length == 0) { return } // no Response required
 
+    
     if (this.energyAvailable < config.rapidGuardian.minBodySize) { return }
     if (this.findMainSpawns().getRoleOfCreepSpawning() && this.findMainSpawns().getRoleOfCreepSpawning() !== Role.GUARDIAN) {
-        this.findMainSpawns().Spawning.cancel()
+        this.findMainSpawns().spawning.cancel()
+        return
     };
 
     let room = Memory.rapidResponseGuardianQueue.shift()
-
+    this.log("rapidResponseGuardianQueue activated " + room )
 
     let opt = {
         Memory: { guardRoom: room }
@@ -103,18 +105,21 @@ Room.prototype.rapidRecoverySpawning = function () {
     */
     if (this.creepsInRole(Role.WORKER) == 0 && this.energyAvailable >= 300) {
         spawnCreep(Role.WORKER, this);
+        return true;
     }
 
     if (this.creepsInRole(Role.CARRIER) == 0
         && this.energyAvailable >= 600
         && this.storageReserve() > 0) {
-        spawnCreep(Role.CARRIER, this)
+        spawnCreep(Role.CARRIER, this);
+        return true;
     }
 
     if (this.creepsInRole(Role.CARRIER) == 0
         && this.creepsInRole(Role.MINER) > 0
         && this.energyAvailable >= 600) {
         spawnCreep(Role.CARRIER, this)
+        return true;
     }
 
 
@@ -160,8 +165,9 @@ spawnCreep = function (role, room, opt) {
             utils.shuffleArray(creepSpawnData.body),
             creepSpawnData.name,
             { memory: creepSpawnData.memory });
-        if (r = 0) {
-            room.log("Outcome = " + r + '; ' + JSON.stringify(creepSpawnData), LogLevel.INFO)
+
+        if (r == OK) {
+            room.log("Succuss Outcome = " + r + '; ' + JSON.stringify(creepSpawnData), LogLevel.INFO)
         } else {
             room.log("Outcome = " + r + '; ' + JSON.stringify(creepSpawnData), LogLevel.ERROR)
         }

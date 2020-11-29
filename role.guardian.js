@@ -8,13 +8,15 @@ var roleGuardian = {
         /** attack if can */
         if (creep.seekAndAttack()) { return };
 
-        if (creep.isInjured()) {
-            creep.healMe()
-            return
-            // go to near healer
+        // if (creep.isInjured()) {
+        //     creep.healMe()
+        //     return
+        //     // go to near healer
+        // }
+
+        if (creep.memory.guardRoom == creep.room.name) {
+            creep.recycle()
         }
-
-
         /** Move to room to guard */
         if (creep.moveToRoom(creep.memory.guardRoom)) { 
             creep.setTask(CreepTasks.MOVING);

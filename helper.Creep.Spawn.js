@@ -20,8 +20,9 @@ fnBuildBody = function (Body, AddParts, energyAvailable) {
         }
     }
 
-    while (energyAvailable >= minCost) {
+    while (energyAvailable >= minCost && Body.length < 50) {
         for (i in AddParts){
+            if (Body.length == 50) { break }
             let partCode = CreepBody.filter(function (r) { return r.Part == AddParts[i] })[0].Cost
 
             if (energyAvailable >= partCode){
@@ -31,7 +32,7 @@ fnBuildBody = function (Body, AddParts, energyAvailable) {
             
         }
     }
-
+    console.log(Body.length)
     return Body
 
 }

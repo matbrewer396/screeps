@@ -41,7 +41,12 @@ var roleWorker = {
             && creep.room.isHealthy() 
             && creep.room.heathyStorageReserve()
         ) {
-            creep.upgradeRoomController();
+            if (creep.room.findUpgradeControllerWithSpace().length > 0) {
+                creep.memory.workerTarget = creep.room.findUpgradeControllerWithSpace()[0];
+                creep.dropOffEnergy();
+            } else {
+                creep.upgradeRoomController();
+            }
             return;
         }
 
@@ -65,9 +70,13 @@ var roleWorker = {
         } else if (creep.getTask() == CreepTasks.UPGRADE_CONTROLLER 
           //&& creep.room.storage.store[RESOURCE_ENERGY] > 20000
         ) {
-            //console.log(creep.room.storage.store[RESOURCE_ENERGY] > 20000)
-            creep.log("upgradeRoomController", LogLevel.DEBUG);
-            creep.upgradeRoomController();
+            if (creep.room.findUpgradeControllerWithSpace().length > 0) {
+                creep.memory.workerTarget = creep.room.findUpgradeControllerWithSpace()[0];
+                creep.dropOffEnergy();
+            } else {
+                creep.upgradeRoomController();
+            }
+            
         } else if (creep.getTask() == CreepTasks.REPAIRER) {
             creep.log("repair. getRepairUpTo:" 
                 + workerTarget.getRepairUpTo() 
@@ -125,11 +134,6 @@ function assignWork(creep) {
      */
     var target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
         filter: (s) => s.getHealthPercentage() < s.getRepairAt().Creep
-            // (s.hitsMax * creep.getRoleConfig().repairStructuresAtHealthPercentage / 100)
-            // && s.structureType != STRUCTURE_WALL
-            // && s.structureType != STRUCTURE_RAMPART)
-            //|| ([STRUCTURE_WALL,STRUCTURE_RAMPART].includes(s.structureType) && s.hits < creep.room.repairWallLess()
-            //)
     });
 
     if (target !== null) {

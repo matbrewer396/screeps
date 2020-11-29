@@ -4,6 +4,12 @@
 var myConfig = config.Roles.filter(function (r) { return r.roleName == Role.HARVESTER })[0]
 var roleHarvester = {
     run: function(creep) {
+
+        if (creep.room.isUnderAttack() && creep.getTask() == CreepTasks.HARVESTING) {
+            creep.log("HOSTILE - returning home", LogLevel.ALWAYS)
+            creep.taskCompleted();
+        }
+
         /** do maths */
         if (creep.memory.ticksToSource == undefined && creep.memory.myRoom == creep.room.name){
             let target = creep.memory.remoteSource;
@@ -83,8 +89,14 @@ var roleHarvester = {
                 if (creep.pos.roomName !== creep.memory.myRoom){
                     creep.moveTo(target);
                 } else {
-                    creep.room.addRoadToPlan(creep.pos)
-                    creep.dropOffEnergy();
+
+                    if (!creep.room.storage || creep.room.storage.store[RESOURCE_ENERGY] < 950000) {
+                        creep.room.addRoadToPlan(creep.pos)
+                        creep.dropOffEnergy();
+                    } else {
+                        creep.upgradeRoomController();
+                    }
+                    
                 }
             // } else {
             //     target = Game.rooms[creep.memory.myRoom].controller;

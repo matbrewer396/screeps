@@ -19,12 +19,10 @@ Room.prototype.findSpawns = function () {
     return this.find(FIND_MY_SPAWNS)
 }
 
-Room.prototype.findFreeSpawns = function (creep) {
-    return this.find(FIND_MY_SPAWNS, {
-        filter: function (s) {
-            return !s.isBusy(creep);
-        }
-    })
+Room.prototype.findFreeSpawns = function (creep, dontCheckForCreepInRange) {
+    return this.find(FIND_MY_SPAWNS).filter(function(s){
+        console.log(s.isBusy(creep, dontCheckForCreepInRange) )
+        return s.isBusy(creep, dontCheckForCreepInRange) == false})
 }
 
 
