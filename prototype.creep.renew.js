@@ -178,7 +178,7 @@ Creep.prototype.review = function (force) {
         if (!spawn) {
             this.log("No spawn in room", LogLevel.INFO)
             this.moveToRoom(nav.findClosetMyRoom(this))
-            return
+            return true
         }
         var r = spawn.recycleCreep(this);
         this.log("Recycling - " + this.name + ' - ' + r, LogLevel.INFO)

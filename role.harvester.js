@@ -5,10 +5,11 @@ var myConfig = config.Roles.filter(function (r) { return r.roleName == Role.HARV
 var roleHarvester = {
     run: function(creep) {
 
-        if (creep.room.isUnderAttack() && creep.getTask() == CreepTasks.HARVESTING) {
-            creep.log("HOSTILE - returning home", LogLevel.ALWAYS)
-            creep.taskCompleted();
-        }
+        // if (creep.room.isUnderAttack() && creep.pos.roomName !== creep.memory.myRoom) {
+        //     creep.log("HOSTILE - returning home", LogLevel.ALWAYS)
+        //     creep.taskCompleted();
+        //     creep.moveTo(target);
+        // }
 
         /** do maths */
         if (creep.memory.ticksToSource == undefined && creep.memory.myRoom == creep.room.name){

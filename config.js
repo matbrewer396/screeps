@@ -9,7 +9,7 @@ global.config = {
     },
     LogOverRide: {
         Room: "",
-        Creep: "CARRIER_7429", // MINER_3532
+        Creep: "GUARDIAN_3474", // MINER_3532
         StructureSpawn: "",
     },
     cpuProfiler: {
@@ -113,7 +113,7 @@ global.config = {
     ],
 
     rapidGuardian: {
-        maxBodySize: 770,
+        maxBodySize: 1500,
         minBodySize: 670,
     },
 

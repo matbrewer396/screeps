@@ -20,6 +20,8 @@ Creep.prototype.run = function () {
     this.log("Run(); Role:" + this.getRoleConfig().roleName + "; Task: " + this.memory.task + "; E: " + this.store[RESOURCE_ENERGY] + '/' + this.store.getFreeCapacity(RESOURCE_ENERGY), LogLevel.DEBUG);
 
 
+
+
     if (this.name == config.LogOverRide.Creep) {
         this.room.visual.circle(this.pos, { fill: 'transparent', radius: 0.45, stroke: config.Creep.Debug.Visual })
     }
@@ -141,7 +143,7 @@ Creep.prototype.setTask = function (task) {
 
 
 Creep.prototype.taskCompleted = function () {
-    this.log("Task (" + this.memory.task +") is completed", LogLevel.INFO);
+    this.log("Task (" + this.memory.task + ") is completed", LogLevel.INFO);
     var currentTask = this.memory.task;
     this.memory.task = null;
     /* clean temp var
@@ -185,10 +187,40 @@ Creep.prototype.healMe = function () {
  */
 Creep.prototype.seekAndAttack = function () {
     let closestHostile = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
-    this.log("Hostile- " + closestHostile + "; Room: " + this.room.name, LogLevel.ALWAYS)
+
+    // console.log(this.room.find(FIND_HOSTILE_CREEPS).length)
+    // console.log(_(Game.creeps).filter(
+    //     {
+    //         memory: {
+    //             role: Role.GUARDIAN
+    //             , guardRoom: this.room.name
+    //         }
+
+    //     }).value().length)
+    let noOfHost = this.room.find(FIND_HOSTILE_CREEPS).length;
+    let noOfGuard = _(Game.creeps).filter(
+        {
+            memory: {
+                role: Role.GUARDIAN
+                , guardRoom: this.room.name
+            }
+
+        }).value().length
+
+    if (noOfHost>= noOfGuard && noOfHost > 0 && !Memory.rapidResponseGuardianQueue.includes(this.name)) {
+            this.log("Reinforcement request, room: " + this.room.name
+            + "; Hostiles: " + noOfHost
+            + "; Guard: " + noOfGuard
+            , LogLevel.ALWAYS);
+            Memory.rapidResponseGuardianQueue.push(this.room.name)
+
+    };
+    
     if (closestHostile) {
+        this.log("Hostile- " + closestHostile + "; Room: " + this.room.name, LogLevel.ALWAYS)
         this.setTask(CreepTasks.ATTACKING)
         if (this.pos.getRangeTo(closestHostile.pos) <= 1) {
+            this.rangedAttack(closestHostile);
             this.attack(closestHostile);
         } if (this.pos.getRangeTo(closestHostile.pos) <= 3) {
             this.rangedAttack(closestHostile);
@@ -197,6 +229,7 @@ Creep.prototype.seekAndAttack = function () {
         }
         return true;
     }
+    return false
 
 }
 

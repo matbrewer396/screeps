@@ -4,6 +4,8 @@
 
 var roleGuardian = {
     run: function (creep) {
+        //TODO if no attack part then withdraw from battle
+        
         
         /** attack if can */
         if (creep.seekAndAttack()) { return };
@@ -15,6 +17,7 @@ var roleGuardian = {
         // }
 
         if (creep.memory.guardRoom == creep.room.name) {
+            creep.log("No Hostile - recycle", LogLevel.ALWAYS)
             creep.recycle()
         }
         /** Move to room to guard */
