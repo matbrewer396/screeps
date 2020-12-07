@@ -1,47 +1,65 @@
-Creep.prototype.collectEnergy = function (havevestIsNone) {
-    this.log("collectEnergy - looking", LogLevel.DEBUG)
+Creep.prototype.collectResource = function (harvestIsNone) {
+    this.log("collectResource - processing", LogLevel.DEBUG)
     this.memory.workerTarget = null;
-    this.memory.lastWithDraw = null;
-    this.memory.lastWithDrawExpiry = null;
+    this.memory.lastDropOffTarget = null;
     // Already on route 
-    if (this.memory.useSource != null && this.body.findIndex(b => b.type == "work") !== -1) {
+    if (this.memory.useSource != null && this.canWork()) {
         this.log("useSource is set", LogLevel.DEBUG)
         this.harvestSource();
         return;
     }
+    // already on route to something
+    let target = Game.getObjectById(this.memory.collectResourceTarget)
+    if (target) {
+        this.log("Exiting target: " + target, LogLevel.DEBUG)
+        if (target.resourceType) {
+            this.pickupDroppedResource(target)
+        } else {
+            this.withDrawResource(target)
+        }
+        
+        return
+    } else if (this.memory.collectResourceTarget) {
+        this.memory.collectResourceTarget = null
+        this.room.removeWithDrawLedger(this.name)
+    }
 
+    this.log("collectResource - looking", LogLevel.DEBUG)
 
-
+    let myConfig = this.getRoleConfig().pickUpNonEnergy;
     /* Look for dropped items
     */
     var dropped = this.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
-        filter: (d) => { return (d.resourceType == RESOURCE_ENERGY && d.amount > 50) }
-    });
-
-    if (dropped !== null) {
-        this.log("collectEnergy Dropped:" + dropped, LogLevel.INFO);
-        if (this.pickup(dropped) == ERR_NOT_IN_RANGE) {
-            this.moveTo(dropped);
+        filter: (d) => {
+            return (suitableTarget(myConfig, d)
+            )
         }
+    });
+    this.log("dropped: " + dropped, LogLevel.DEBUG)
+    if (dropped) {
+        this.pickupDroppedResource(dropped);
         return;
     }
 
 
     let container;
     container = this.pos.findClosestByRange(FIND_TOMBSTONES, {
-        filter: (d) => { return (d.store[RESOURCE_ENERGY] > 0) }
+        filter: (d) => {
+            return suitableTarget(myConfig, d)
+        }
     });
 
     /* head to container
     */
+    let resourceFilter = RESOURCE_ENERGY;
     if (!container) {
         container = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
-                return (structure.structureType == STRUCTURE_CONTAINER
-                    && (structure.store[RESOURCE_ENERGY] > this.store.getFreeCapacity(RESOURCE_ENERGY) // has more e and creep cap
-                        || structure.store[RESOURCE_ENERGY] > 200)
-                    && Game.rooms[this.pos.roomName].controllerContainers().filter(function (r) { return r.id == structure.id }).length == 0
-                );
+                if (structure.structureType !== STRUCTURE_CONTAINER) { return false }
+                let minToBeValid = this.store.getFreeCapacity(resourceFilter)
+             
+                //if (minToBeValid > 200) { minToBeValid = 200 }
+                return suitableTarget(myConfig, structure, { resourceFilter: resourceFilter, minToBeValid: minToBeValid, notId: this.memory.lastWithDraw })
             }
         });
     }
@@ -49,45 +67,25 @@ Creep.prototype.collectEnergy = function (havevestIsNone) {
 
     this.log("CE; container: " + container, LogLevel.DEBUG)
 
-    if (container == null) {
+    if (!container) {
         container = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
-                return (structure.structureType == STRUCTURE_STORAGE
-                    && (structure.store[RESOURCE_ENERGY] > this.room.withDrawLimit()
-                        || this.room.isHealthy() == false
-                        || this.memory.role == Role.CARRIER) // CARRIER can take to spawn
-                    && structure.store[RESOURCE_ENERGY] > 0
-                );
+                return suitableTarget(myConfig, structure, { resourceFilter: resourceFilter, notId: this.memory.lastWithDraw });
             }
         });
     }
 
-    if (container == null && this.getRoleConfig.collectFromAnyConainter) {
 
-        container = this.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return (structure.structureType == STRUCTURE_CONTAINER
-                    && structure.store[RESOURCE_ENERGY] > 0);
-            }
-        });
-    };
-
-    if (container !== null) {
-        this.log("collectEnergy container:" + container, LogLevel.INFO);
-        let r = this.withdraw(container, RESOURCE_ENERGY);
-        this.log("withdraw container: " + r, LogLevel.DEBUG);
-        this.memory.lastWithDraw = container.id;
-        this.memory.lastWithDrawExpiry = config.Creep.DropOff.LastWithDrawExpiry;
-        if (r == ERR_NOT_IN_RANGE) {
-            let r = this.moveTo(container);
-            this.log("move to container: " + r, LogLevel.DEBUG);
-        }
+    if (container) {
+        this.withDrawResource(container,resourceFilter)
         return;
-    } else if (havevestIsNone == true && this.body.findIndex(b => b.type == "work") !== -1) {
+    } else if (harvestIsNone == true && this.canWork()) {
         /* eught should happen 
         */
         if (this.harvestSource()) { return };
     } else { // Out of Energy in room
+        this.log("No resources to collect ", LogLevel.DEBUG);
+        this.room.removeWithDrawLedger(this.name);
         this.taskCompleted();
     }
 
@@ -97,6 +95,133 @@ Creep.prototype.collectEnergy = function (havevestIsNone) {
 
     //W7N3_WaitForEnergy()
 
+}
+
+Creep.prototype.withDrawResource = function (target, resourceFilter) {
+    this.log("collectResource container:" + target, LogLevel.INFO);
+    
+    if (!this.pos.isNearTo(target)) {
+        this.moveTo(target, config.MoveTo.withDraw);
+    }
+    let resourceFixed = true;
+
+    // if (target && !target.store) {
+    //     console.log("Target with out store " + target)
+    // }
+
+    if (!resourceFilter && this.getRoleConfig().pickUpNonEnergy) {
+        if (target.store) {
+            resourceFilter = target.store.getResources()[0]
+        } else {
+            resourceFilter = RESOURCE_ENERGY
+        }
+        resourceFixed = false
+    } else if (!resourceFilter) {
+        resourceFilter = RESOURCE_ENERGY
+    }
+    this.room.addWithDrawLedger(target.id, this.name, this.store.getFreeCapacity(resourceFilter))
+    let r = this.withdraw(target, resourceFilter);
+    this.log("withdraw container: " + r, LogLevel.DEBUG);
+    if (r == ERR_NOT_IN_RANGE) {
+        this.memory.collectResourceTarget = target.id;
+    } else if ((target.store && target.store.getResources().length <= 1) || resourceFixed) {
+        this.memory.lastWithDraw = target.id;
+        this.memory.lastWithDrawExpiry = config.Creep.DropOff.LastWithDrawExpiry;
+        this.memory.workerTarget = null;
+        this.memory.collectResourceTarget  = null;
+        this.room.removeWithDrawLedger(this.name)
+    }
+
+}
+
+
+
+function suitableTarget(myConfig, obj, opt) {
+    let resourceFilter = RESOURCE_ENERGY;
+    let minToBeValid = 10;
+    if (myConfig.pickUpNonEnergy) { resourceFilter = null } // assume energy only if not allowed
+    if (opt && opt.resourceFilter) { resourceFilter = opt.resourceFilter }
+
+    if (resourceFilter == RESOURCE_ENERGY) {
+        minToBeValid = 80
+    }
+
+    let availableResources  = 0
+    if (obj.amount) { // 
+        availableResources  = obj.amount
+    }
+    if (obj.store) { // container or tombstone 
+        availableResources = obj.store[resourceFilter] 
+    }
+    if (availableResources < minToBeValid) { return false }; // not worth it
+    if (obj.room.getWithDrawLedgerTotal(obj.id) + 200 > availableResources ) {
+        return false
+    }
+    
+    
+    if (opt && opt.minToBeValid) { minToBeValid = opt.minToBeValid }
+
+    if (!resourceFilter && obj.resourceType == RESOURCE_ENERGY) { return false }
+   
+    // dont pick up from the same target
+    if (opt && opt.notId && opt.notId == obj.id){
+        return false 
+    }
+
+    if (obj.structureType) {
+        if (obj.structureType == STRUCTURE_CONTAINER) {
+            if (obj.store[resourceFilter] < minToBeValid) { return false }
+            // not for upgrader
+            if (obj.room.controllerContainers().filter(function (r) { return r.id == obj.id }).length > 0) { return false }
+        } else if (obj.structureType == STRUCTURE_STORAGE) {
+            if (!obj.room.isHealthy()  // allow worker to pull when in trouble  
+                || myConfig.withLimitlessFromStorage) {
+
+            } else if (obj.store[RESOURCE_ENERGY] < obj.room.withDrawLimit()) { return false }
+
+        } else {
+            return false // some other structure 
+        }
+
+
+    }
+
+
+
+    return true
+}
+
+Creep.prototype.transferFromContainer = function () {
+    let container = this.pos.getContainerRightNextTo()
+    if (container) {
+        let r = this.withdraw(container)
+        this.log("transferFromContainer outcome: " + r, LogLevel.ALWAYS);
+    }
+}
+
+
+Creep.prototype.pickupDroppedResource = function (dropped) {
+    this.log("pickupDroppedResource Dropped:" + dropped, LogLevel.INFO);
+    if (!this.pos.isNearTo(dropped)) {
+        this.moveTo(dropped);
+        this.room.addWithDrawLedger(dropped.id, this.name, this.store.getFreeCapacity(RESOURCE_ENERGY))
+        this.memory.collectResourceTarget = dropped.id;
+        
+    }
+    
+    if (this.pos.isNearTo(dropped)) {
+        let r = this.pickup(dropped);
+        this.log("pickupDroppedResource outcome: " + r, LogLevel.INFO);
+        this.transferFromContainer()
+    }
+    
+    
+    // let r = this.pickup(dropped);
+    // this.log("pickupDroppedResource outcome: " + r, LogLevel.INFO);
+    // if (r == ERR_NOT_IN_RANGE) {
+    //     this.memory.collectResourceTarget = dropped.id;
+    // }
+    
 }
 
 
@@ -147,13 +272,15 @@ function FindNewSource(creep) {
 //      * @return boolean 
 //      */
 Creep.prototype.dropOffEnergy = function () {
+    this.room.removeWithDrawLedger(this.name)
     var target;
     /* Find existing target
     */
     target = Game.getObjectById(this.memory.workerTarget);
     this.log("DE; Drop off target (old) " + target + ';', LogLevel.DEBUG)
 
-    if ((target && target.store && (target.store.getFreeCapacity(RESOURCE_ENERGY) == 0 || this.room.controllerContainers().filter(function (r) { return r.id == target.id }).length > 0))
+    if ((target && target.store 
+        && (target.store.getFreeCapacity(RESOURCE_ENERGY) == 0 || this.room.controllerContainers().filter(function (r) { return r.id == target.id }).length > 0))
         || (target && !target.store) // target doesnt have store
     ) { // is still valid?
         this.log("DE; Target no longer valid " + target + ';', LogLevel.DEBUG)
@@ -163,26 +290,35 @@ Creep.prototype.dropOffEnergy = function () {
     }
 
     /** long range havester go direct  */
-    if (this.getRoleConfig().dropOffAtUpgradeContainer) {
+    if (this.getRoleConfig().dropOffAtUpgradeContainerFirst) {
         target = this.room.findUpgradeControllerWithSpace()[0]
     }
-    
-    if (this.getRoleConfig().dropOffAtStorage && this.room.isHealthy()) {
+
+    if (this.getRoleConfig().dropOffAtStorageFirst && this.room.isHealthy() && this.room.storage) {
         target = this.room.storage;
     }
 
-    
+
 
     /* get new target
     */
-    if (target == null) {
-        target = this.pos.getEnergyDropTarget();
+    if (!target) {
+        this.log("DE; lastDropOffTarget: " + this.memory.lastDropOffTarget, LogLevel.DEBUG)
+        target = this.pos.getEnergyDropTarget(this.memory.lastDropOffTarget);
         this.log("DE; pos.getEnergyDropTarget: " + target + ';', LogLevel.DEBUG)
     };
 
-    
+
+    if (!target) {
+        target = this.room.findUpgradeControllerWithSpace()[0]
+    }
+    if (!target && this.room.storage) {
+        target = this.room.storage;
+    }
+
     //this.log("Drop off target" +target + '; Free: ' + target.store.getFreeCapacity(RESOURCE_ENERGY), LogLevel.DEBUG)
-    if (target == null) {
+    if (!target) {
+        this.log("DE; not targets found ", LogLevel.DEBUG)
         return false;
     }
 
@@ -194,7 +330,6 @@ Creep.prototype.dropOffEnergy = function () {
             this.memory.lastWithDraw = undefined
             this.memory.lastWithDrawExpiry = undefined
         }
-
     }
 
     this.memory.workerTarget = target.id;
@@ -203,6 +338,8 @@ Creep.prototype.dropOffEnergy = function () {
     var r = this.transfer(target, RESOURCE_ENERGY)
     if (r == OK) {
         this.log("Transferred", LogLevel.DEBUG)
+        this.memory.lastDropOffTarget = this.memory.workerTarget;
+        this.memory.workerTarget = null;
         this.taskCompleted()
     }
     else if (r == ERR_NOT_IN_RANGE) {
@@ -217,22 +354,45 @@ Creep.prototype.dropOffEnergy = function () {
 
 
 Creep.prototype.pickupDropped = function (maxRange) {
-    var dropped = this.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
-        filter: (d) => { return (d.resourceType == RESOURCE_ENERGY && d.amount > 50) }
-    });
 
-    if (maxRange) {
-        if (this.pos.getRangeTo(dropped) > maxRange) {
-            return
-        }
+    let dropped = this.pos.findClosestByRange(FIND_TOMBSTONES, {
+        filter: (d) => { return (d.resourceType == RESOURCE_ENERGY && d.amount > 20) }
+    });
+    let rangeTo = this.pos.getRangeTo(dropped);
+    this.log("found tome: " + dropped + "; RangeTo: " + rangeTo, LogLevel.DEBUG)
+
+    if (maxRange && rangeTo > maxRange) { dropped = undefined }
+
+    if (!dropped) {
+        dropped = this.pos.findClosestByRange(FIND_DROPPED_RESOURCES, {
+            filter: (d) => { return (d.resourceType == RESOURCE_ENERGY && d.amount > 50) }
+        });
+
+        rangeTo = this.pos.getRangeTo(dropped);
+        this.log("found dropped: " + dropped + "; RangeTo: " + rangeTo, LogLevel.DEBUG)
     }
 
+    if (maxRange && rangeTo > maxRange) {
+        return false // out of range
+    }
 
     if (dropped !== null) {
-        this.log("collectEnergy Dropped:" + dropped, LogLevel.INFO);
-        if (this.pickup(dropped) == ERR_NOT_IN_RANGE) {
+        this.log("collectResource Dropped:" + dropped, LogLevel.INFO);
+        if (rangeTo > 1) {
             this.moveTo(dropped);
+            if (rangeTo == 2) {
+                this.pickup(dropped); // now in range 
+            }
+        } else {
+            if (this.pickup(dropped) == ERR_NOT_IN_RANGE) {
+                this.moveTo(dropped);
+            }
         }
-        return;
+
+        return true;
     }
 }
+
+
+
+

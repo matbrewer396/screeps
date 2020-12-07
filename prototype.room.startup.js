@@ -1,7 +1,9 @@
 const { cond } = require('lodash');
-let creepLogic = require('./roles');
+
 
 Room.prototype.startUp = function () {
+    this.checkMemory()
+    
     this.log('startUp() is now processing. isPrimaryRoom: ' + this.isPrimaryRoom()
         + ";energyAvailable: " + this.energyAvailable
         + ";energyCapacityAvailable: " + this.energyCapacityAvailable
@@ -17,12 +19,10 @@ Room.prototype.startUp = function () {
     // }
 
 
-    if (this.isUnderAttack()  && this.findKeeperLair().length == 0) {
-        this.log("UNDER ATTACK", LogLevel.ALWAYS);
+    if (this.isUnderAttack()) {
+        this.log("UNDER ATTACK. isHostileOwn: " + this.isHostileOwn(), LogLevel.ALWAYS);
         /** ask for help */
-        if (!Memory.rapidResponseGuardianQueue.includes(this.name)
-           
-            && _(Game.creeps).filter(
+        if ( _(Game.creeps).filter(
                 {
                     memory: {
                         role: Role.GUARDIAN
@@ -30,7 +30,7 @@ Room.prototype.startUp = function () {
                     }
 
                 }).value().length == 0) {
-            Memory.rapidResponseGuardianQueue.push(this.name)
+            Military.rapidResponseRequest(this.name)
         }
     }
 
@@ -67,14 +67,20 @@ Room.prototype.startUp = function () {
         this.remoteMining();
     }
 
+    this.remoteMining();
     baseBuilder(this);
-
 
 };
 
 Room.prototype.rapidGuardianSpawning = function () {
     if (!Memory.rapidResponseGuardianQueue) { Memory.rapidResponseGuardianQueue = []; return }; // init queue
     if (Memory.rapidResponseGuardianQueue.length == 0) { return } // no Response required
+
+    if (Memory.rapidResponseGuardianQueue.length >  100) {
+        this.log("rapidResponseGuardianQueue > 100", LogLevel.ERROR)
+        Memory.rapidResponseGuardianQueue = []; 
+        return 
+    }
 
     
     if (this.energyAvailable < config.rapidGuardian.minBodySize) { return }
@@ -124,7 +130,7 @@ Room.prototype.rapidRecoverySpawning = function () {
 
 
 }
-
+let creepLogic = require('./roles');
 Room.prototype.bauSpawning = function () {
     if (!this.findMainSpawns().isBusy()) {
         for (i in config.Roles) {
@@ -154,27 +160,6 @@ Room.prototype.bauSpawning = function () {
 
 
 
-spawnCreep = function (role, room, opt) {
-    var spawn = room.findMainSpawns();
-    room.log("Createing new creep, role: " + role, LogLevel.DEBUG);
-    let creepSpawnData = creepLogic[role].spawnData(room, opt);
-    room.log(JSON.stringify(creepSpawnData), LogLevel.ALWAYS)
-    if (config.Room.Spawning.Allow) {
-        spawn.spawnRequested = true;
-        let r = spawn.spawnCreep(
-            utils.shuffleArray(creepSpawnData.body),
-            creepSpawnData.name,
-            { memory: creepSpawnData.memory });
-
-        if (r == OK) {
-            room.log("Succuss Outcome = " + r + '; ' + JSON.stringify(creepSpawnData), LogLevel.INFO)
-        } else {
-            room.log("Outcome = " + r + '; ' + JSON.stringify(creepSpawnData), LogLevel.ERROR)
-        }
-        return r
-    }
-    
-}
 
 
 

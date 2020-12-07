@@ -4,7 +4,6 @@ StructureTower.prototype.run = function () {
     let closestHostile = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS);
     if (closestHostile) {
         let r = this.attack(closestHostile);
-        console.log(r)
         return;
     }
     /* Repair

@@ -12,6 +12,8 @@ Creep.prototype.getRoleConfig = function () {
  * Summary. Process creep
  */
 Creep.prototype.run = function () {
+    this.hasBeenHitCal()
+
     if (this.memory.currentRole == null) {
         this.log("roles is null", LogLevel.DEBUG);
         this.memory.currentRole = this.memory.role
@@ -44,9 +46,49 @@ Creep.prototype.run = function () {
     */
 
     creepLogic[this.memory.role].run(this)
+
+    if (this.name == config.LogOverRide.Creep) {
+        if (this.memory.lastDropOffTarget){
+            let pos = Game.getObjectById(this.memory.lastDropOffTarget).pos
+            if (pos){
+                this.room.visual.circle(pos, { fill: 'transparent', radius: 0.45, stroke: "red" })
+            }
+            pos = Game.getObjectById(this.memory.workerTarget).pos
+            if (pos){
+                this.room.visual.circle(pos, { fill: 'transparent', radius: 0.45, stroke: "green"})
+            }
+            
+        }
+        
+    }
+
+    
 };
 
 
+Creep.prototype.hasBeenHitCal = function () {
+    if (!this.memory.lastHits) { this.memory.lastHits = this.hits }
+    if (!this.memory.isUnderAttack) { this.memory.isUnderAttack = false }
+    if (!this.memory.isUnderAttackExpiry) { this.memory.isUnderAttackExpiry = 0 }
+
+    if (this.memory.lastHits !== this.hits) {
+        // just started being hit
+        this.memory.isUnderAttack = true
+        this.memory.isUnderAttackExpiry = config.Creep.isUnderAttack.Expiry;
+        
+    } else if (this.memory.isUnderAttack) {
+        // was under attack
+        if (this.memory.isUnderAttackExpiry  <= 0 ) {
+            this.memory.isUnderAttack = false
+        } else {
+            this.memory.isUnderAttackExpiry -= 1
+        }
+    } 
+    return
+}
+Creep.prototype.isUnderAttack = function () {
+    return this.memory.isUnderAttack;
+}
 
 
 
@@ -207,12 +249,14 @@ Creep.prototype.seekAndAttack = function () {
 
         }).value().length
 
-    if (noOfHost>= noOfGuard && noOfHost > 0 && !Memory.rapidResponseGuardianQueue.includes(this.name)) {
+    if (noOfHost>= noOfGuard 
+            && noOfHost > 0 
+            && Military.rapidResponseRequest(this.room.name)
+        ) {
             this.log("Reinforcement request, room: " + this.room.name
             + "; Hostiles: " + noOfHost
             + "; Guard: " + noOfGuard
             , LogLevel.ALWAYS);
-            Memory.rapidResponseGuardianQueue.push(this.room.name)
 
     };
     
@@ -224,16 +268,41 @@ Creep.prototype.seekAndAttack = function () {
             this.attack(closestHostile);
         } if (this.pos.getRangeTo(closestHostile.pos) <= 3) {
             this.rangedAttack(closestHostile);
+            // if target only has melee move away
         } else {
             this.moveTo(closestHostile.pos, { visualizePathStyle: { stroke: '#ffffff' } })
         }
+        this.memory.lastHostileSeen = Game.time;
         return true;
     }
     return false
 
 }
 
+Creep.prototype.hasWorkingPart = function (part) {
+    this.body.filter(function (b) {
+        if (b.hits == 0 ) { return false }
+        if (b.type == part ) {return true }
+        return false
+    })
+}
+Creep.prototype.canWork = function () {
+    return this.hasWorkingPart(WORK)
+}
 
+Creep.prototype.canMove = function () {
+    return this.hasWorkingPart(MOVE)
+}
 
+Creep.prototype.canAttack = function () {
+    if (this.hasWorkingPart(ATTACK)) {return true}
+    if (this.hasWorkingPart(RANGED_ATTACK)) {return true}
+    return false
+}
+Creep.prototype.canHeal = function () {
+    return this.hasWorkingPart(HEAL)
+}
 
-
+Creep.prototype.canClaim = function () {
+    return this.hasWorkingPart(CLAIM)
+}

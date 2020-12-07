@@ -10,12 +10,19 @@ StructureSpawn.prototype.log = function (msg, LogLevel) {
 }
 
 
-function logger(msg, LogLevel, ObjectType, Object){
+
+
+global.logger = function logger(msg, LogLevel, ObjectType, Object){
+    let name;
     if (LogLevel == undefined) {
         console.log("LogLevel, undefined. " + msg)
     }
 
-    if (config.LogLevel[ObjectType] >= LogLevel || config.LogOverRide[ObjectType] == Object.name ) {
-        console.log(ObjectType + ": " + Object.name + '; ' + msg);
+    if (Object) {
+        name = Object.name
+    }
+
+    if (config.LogLevel[ObjectType] >= LogLevel || config.LogOverRide[ObjectType] == name ) {
+        console.log(ObjectType + ": " + name + '; ' + msg);
     }
 }

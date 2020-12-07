@@ -21,7 +21,6 @@ Room.prototype.findSpawns = function () {
 
 Room.prototype.findFreeSpawns = function (creep, dontCheckForCreepInRange) {
     return this.find(FIND_MY_SPAWNS).filter(function(s){
-        console.log(s.isBusy(creep, dontCheckForCreepInRange) )
         return s.isBusy(creep, dontCheckForCreepInRange) == false})
 }
 

@@ -4,19 +4,15 @@
 var myConfig = config.Roles.filter(function (r) { return r.roleName == Role.HARVESTER })[0]
 var roleHarvester = {
     run: function(creep) {
-
-        // if (creep.room.isUnderAttack() && creep.pos.roomName !== creep.memory.myRoom) {
-        //     creep.log("HOSTILE - returning home", LogLevel.ALWAYS)
-        //     creep.taskCompleted();
-        //     creep.moveTo(target);
-        // }
-
-        /** do maths */
-        if (creep.memory.ticksToSource == undefined && creep.memory.myRoom == creep.room.name){
-            let target = creep.memory.remoteSource;
-            let targetPos = new RoomPosition(target.x, target.y, target.roomName);
-            creep.memory.ticksToSource = creep.room.getRangeBetweenPos(creep.room.findMainSpawns().pos, targetPos)
+        initMemory(creep);
+        if (creep.isUnderAttack() && creep.pos.roomName !== creep.memory.myRoom) {
+            creep.log("HOSTILE - returning home", LogLevel.ALWAYS)
+            creep.taskCompleted();
+            creep.goHome();
+            return;
         }
+        
+        
 
         
         // if (creep.store[RESOURCE_ENERGY] == 0 
@@ -40,7 +36,7 @@ var roleHarvester = {
 
                 /** Move and harvest */
                 creep.setTask(CreepTasks.HARVESTING);
-                creep.pickupDropped(myConfig.pickUpDroppedInRange);
+                if (creep.pos.roomName !== creep.memory.myRoom && creep.pickupDropped(myConfig.pickUpDroppedInRange) ) {return};
                 
                 let target = creep.memory.remoteSource;
                 let targetPos = new RoomPosition(target.x, target.y, target.roomName);
@@ -80,15 +76,11 @@ var roleHarvester = {
         } else {
             
             /** Drop off  */
-            let target; 
             // if (Game.rooms[creep.memory.myRoom].storage.store[RESOURCE_ENERGY] > myConfig.upgradeIfStorageOver){
-                target = Game.rooms[creep.memory.myRoom].storage;
-                if (!target) {
-                    target = Game.rooms[creep.memory.myRoom].findMainSpawns();
-                }
+                
 
                 if (creep.pos.roomName !== creep.memory.myRoom){
-                    creep.moveTo(target);
+                    creep.goHome();
                 } else {
 
                     if (!creep.room.storage || creep.room.storage.store[RESOURCE_ENERGY] < 950000) {
@@ -135,6 +127,8 @@ var roleHarvester = {
         while (i > 0) {
             body.push(WORK)
             energyAvailable -= CreepBody.filter(function (r) { return r.Part ==WORK})[0].Cost;
+            body.push(MOVE)
+            energyAvailable -= CreepBody.filter(function (r) { return r.Part ==MOVE})[0].Cost;
             i -= 1;
         }
         
@@ -147,6 +141,16 @@ var roleHarvester = {
     }
 }
 
+function initMemory(creep) {
+    /** do maths */
+    if (creep.memory.ticksToSource == undefined && creep.memory.myRoom == creep.room.name){
+        let target = creep.memory.remoteSource;
+        let targetPos = new RoomPosition(target.x, target.y, target.roomName);
+        creep.memory.ticksToSource = creep.room.getRangeBetweenPos(creep.room.findMainSpawns().pos, targetPos)
+    }
+}
 
 
 module.exports = roleHarvester;
+const profiler = require("screeps-profiler");
+profiler.registerObject(module.exports, 'roleHarvester');

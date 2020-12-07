@@ -1,27 +1,36 @@
 Room.prototype.remoteMining = function () {
-    if (this.controller.level <= 2 ) { return }
+    if (this.controller.level <= 2) { return }
 
-    //    // TODO automate this
-    //    this.addRemoteSource(new RoomPosition(34, 20, "W8N3"))
-    //    this.addRemoteSource(new RoomPosition(30, 21, "W8N3"))
-    //    this.addRemoteSource(new RoomPosition(4, 12, "W8N2"))
-    //    this.addRemoteSource(new RoomPosition(21, 43, "W8N2"))
-    //    this.addRemoteSource(new RoomPosition(43, 31, "W7N2"))
-    //    this.addRemoteSource(new RoomProsition(23, 34, "W7N2"))
-    //    this.addRemoteSource(new RoomPosition(41, 46, "W7N4"))
-    //    this.addRemoteSource(new RoomPosition(12, 31, "W7N4"))
-    //    this.addRemoteSource(new RoomPosition(7, 43, "W6N3"))
-    //    this.addRemoteSource(new RoomPosition(28, 20, "W6N3"))
 
-       
-    if (this.energyAvailable == this.energyCapacityAvailable
+    let directExits = Game.map.describeExits(this.name)
+    let remoteSources = [];
+    let exits = [];
+
+    for (let i in directExits) {
+        exits.push(directExits[i])
+    }
+
+    // proces closest rooms first
+    remoteSources = remoteSources.concat(
+        this.memory.remoteSources.filter(function (s) {
+            return exits.includes(s.roomName)
+        })
+    )
+    remoteSources = remoteSources.concat(
+        this.memory.remoteSources.filter(function (s) {
+            return !exits.includes(s.roomName)
+        })
+    )
+
+    if (this.energyAvailable >  config.Roles.filter(function (r) { return r.roleName == Role.HARVESTER })[0].maxBodyCost
         && !this.findMainSpawns().isBusy()
         && this.isHealthy()
         && (this.storageReserve() > this.creepsInRole(Role.HARVESTER) * this.energyCapacityAvailable
-             || this.heathyStorageReserve()
-            )
+            || this.heathyStorageReserve()
+        )
     ) {
-        for (i in this.memory.remoteSources) {
+
+        for (i in remoteSources) {
             let pos = new RoomPosition(this.memory.remoteSources[i].x, this.memory.remoteSources[i].y, this.memory.remoteSources[i].roomName)
             /** create worker creep */
             let c = _(Game.creeps).filter(
@@ -44,27 +53,27 @@ Room.prototype.remoteMining = function () {
                 return
             }
 
-        //     /** create a guardian */
-        //     if (c > 2 || c == pos.fnNoOfCreepsRequired()) {
-        //         let g = _(Game.creeps).filter(
-        //             {
-        //                 memory: {
-        //                     role: Role.GUARDIAN
-        //                     , guardRoom: pos.roomName
-        //                 }
-                        
-        //             }).value().length;
+            //     /** create a guardian */
+            //     if (c > 2 || c == pos.fnNoOfCreepsRequired()) {
+            //         let g = _(Game.creeps).filter(
+            //             {
+            //                 memory: {
+            //                     role: Role.GUARDIAN
+            //                     , guardRoom: pos.roomName
+            //                 }
 
-        //         if (g <= 0) {
-        //             let opt = {
-        //                 Memory: { guardRoom: pos.roomName }
-        //                 ,maxBodySize: 670
-        //             }
-        //             spawnCreep(Role.GUARDIAN, this, opt)
-        //             return
-        //         }
+            //             }).value().length;
 
-        //     }
+            //         if (g <= 0) {
+            //             let opt = {
+            //                 Memory: { guardRoom: pos.roomName }
+            //                 ,maxBodySize: 670
+            //             }
+            //             spawnCreep(Role.GUARDIAN, this, opt)
+            //             return
+            //         }
+
+            //     }
         }
     }
 }

@@ -42,7 +42,7 @@ var roleMiner = {
                 creep.log("harvesting", LogLevel.DEBUG);
                 let r = creep.harvest(creep.pos.findClosestByPath(FIND_SOURCES))
                 if (r == ERR_NOT_ENOUGH_RESOURCES && creep.ticksToLive < 1400){
-                    creep.review(true)
+                    creep.review(false)
                 }
                 creep.log("harvesting outcome: " + r, LogLevel.DEBUG);
             } else {
@@ -106,3 +106,5 @@ function tryAssignContainer(creep, container) {
 }
 
 module.exports = roleMiner;
+const profiler = require("screeps-profiler");
+profiler.registerObject(module.exports, 'roleMiner');

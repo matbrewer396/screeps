@@ -25,3 +25,12 @@ Creep.prototype.moveToRoom = function (room) {
     }
 
 }
+
+
+Creep.prototype.goHome = function () {
+    let target = Game.rooms[this.memory.myRoom].storage;
+    if (!target) {
+        target = Game.rooms[this.memory.myRoom].findMainSpawns();
+    }
+    this.moveTo(target);
+}

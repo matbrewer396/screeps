@@ -4,7 +4,7 @@ var roleWorker = {
         */
         if (creep.store[RESOURCE_ENERGY] == 0 || (creep.getTask() == CreepTasks.FIND_ENERGY)) {
             creep.setTask(CreepTasks.FIND_ENERGY);
-            creep.collectEnergy(true);
+            creep.collectResource(true);
             creep.memory.workerTarget = null;
             return;
         }
@@ -169,3 +169,5 @@ function assignWork(creep) {
 };
 
 module.exports = roleWorker;
+const profiler = require("screeps-profiler");
+profiler.registerObject(module.exports, 'roleWorker');

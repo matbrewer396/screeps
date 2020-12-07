@@ -1,5 +1,5 @@
 RoomPosition.prototype.getNearByPositions = function getNearByPositions(range) {
-    if (!range) { range = 1};
+    if (!range) { range = 1 };
     var positions = [];
     let startX = this.x - range || 1;
     let startY = this.y - range || 1;
@@ -80,7 +80,7 @@ RoomPosition.prototype.getContainersRightNextTo = function getContainersRightNex
     return containers
 }
 
-RoomPosition.prototype.getEnergyDropTarget = function () {
+RoomPosition.prototype.getEnergyDropTarget = function (lastTarget) {
     let target;
 
     /** full tower if under attack */
@@ -96,30 +96,34 @@ RoomPosition.prototype.getEnergyDropTarget = function () {
     } else if (!this.room().isHealthy()) {
         /* Get full up spawn get more creeps to help
         */
-        
+
 
         target = this.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
                 return ((structure.structureType == STRUCTURE_EXTENSION
                     || structure.structureType == STRUCTURE_SPAWN
 
-                ) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1);
+                ) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1
+                    && lastTarget !== structure.id
+                );
             }
         });
     } else {
         target = this.findClosestByRange(FIND_STRUCTURES, {
             filter: (structure) => {
-                return ((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1)
+                return (
+                    ((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) && structure.store.getFreeCapacity(RESOURCE_ENERGY) >= 1)
                     || (structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200)
+                    && lastTarget !== structure.id)
                     ;
             }
         });
 
-        if (target) {return target; }
+        if (target) { return target; }
 
-        if ( !this.room().heathyStorageReserve()
+        if (!this.room().heathyStorageReserve()
         ) {
-            target = this.room().storage 
+            target = this.room().storage
         } else {
             target = this.findClosestByRange(FIND_STRUCTURES, {
                 filter: (structure) => {
@@ -128,23 +132,25 @@ RoomPosition.prototype.getEnergyDropTarget = function () {
                 }
             });
         }
- 
 
-        
+
+
         //&& Game.rooms[this.pos.roomName].controllerContainers().filter(function (r) { return r.id == structure.id }).length == 0
-        
+
     }
 
 
 
 
-    if (target) {return target; }
+    if (target) { return target; }
     return this.findClosestByRange(FIND_STRUCTURES, {
         filter: (structure) => {
-            return ((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN|| structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 1)
+            return (((structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN || structure.structureType == STRUCTURE_STORAGE) && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 1)
                 || (structure.structureType == STRUCTURE_CONTAINER && Game.rooms[this.roomName].controllerContainers().filter(function (r) { return r.id == structure.id }).length == 1
                     && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 400)
-                || (structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200);
+                || (structure.structureType == STRUCTURE_TOWER && structure.store.getFreeCapacity(RESOURCE_ENERGY) > 200)
+    )
+                && lastTarget !== structure.id;
         }
     });
 
@@ -178,7 +184,7 @@ RoomPosition.prototype.isNextToRoad = function () {
 
 
 RoomPosition.prototype.fnNoOfCreepsRequired = function () {
-    return 1;
+    return 2;
 };
 
 
@@ -266,7 +272,7 @@ RoomPosition.prototype.isBuildable = function () {
 RoomPosition.prototype.isBoarder = function (offset) {
     if (!offset) (offset = 0)
 
-    return (this.x <= 1 + offset || this.x >= 48 - offset || this.y <= 1 + offset  || this.y >= 48 - offset);
+    return (this.x <= 1 + offset || this.x >= 48 - offset || this.y <= 1 + offset || this.y >= 48 - offset);
 };
 
 

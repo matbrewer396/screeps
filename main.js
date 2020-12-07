@@ -18,7 +18,7 @@ module.exports.loop = function() {
 
 
 function processRooms() {
-    
+   // Memory.rapidResponseGuardianQueue = []
     for (var name in Game.rooms) {
         var room = Game.rooms[name];
         if (Memory.primaryRoom == null) {
@@ -80,6 +80,11 @@ function cleanMemory() {
     for(var name in Memory.creeps) {
         if(!Game.creeps[name]) {
             delete Memory.creeps[name];
+            for (var roomName in Game.rooms) {
+                Game.rooms[roomName].removeCreepFromMemory(name)
+            }
+            Game.rooms
+            
             console.log('Clearing non-existing creep memory:', name);
         }
     }

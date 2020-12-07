@@ -268,3 +268,13 @@ Room.prototype.storageReserve = function () {
 }
 
 
+Room.prototype.isHostileOwn = function () {
+    if (this.findKeeperLair().length > 0) {return true};
+    if (this.controller) {
+        if (this.controller.my) {return false}
+        if (this.controller.owner) {return true}
+    }
+    return false
+}
+
+

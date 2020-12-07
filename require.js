@@ -3,6 +3,8 @@ require('config');
 require('logger');
 require('utils');
 
+
+
 require('helper.Creep.Spawn');
 require('helper.Room.BaseBuilder');
 require('helper.Room.RemoteMining');
@@ -27,9 +29,10 @@ require('prototype.creep_body');
 require('prototype.creep.movement');
 require('prototype.RoomPosition');
 require('prototype.Structure');
+require('prototype.Store');
 
 require('Command');
 require('RoomReconData');
-
+require('Military');
 
 

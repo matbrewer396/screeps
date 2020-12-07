@@ -136,3 +136,5 @@ class RoomReconData {
 }
 
 module.exports = RoomReconData;
+const profiler = require("screeps-profiler");
+profiler.registerObject(module.exports, 'RoomReconData');

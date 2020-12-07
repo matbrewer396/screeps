@@ -1,14 +1,15 @@
-Creep.prototype.handleRenewCreepOutCome = function (outcome,spawn,allowRecall) {
-    this.log("Renewing outcome - " + r, LogLevel.INFO)
+Creep.prototype.handleRenewCreepOutCome = function (outcome, spawn, allowRecall) {
+    this.log("Renewing outcome - " + outcome, LogLevel.INFO)
     if (outcome == OK) {
-        spawn.renewRequested = true
+        this.room.memory.spawnsBusy.push(spawn.name)
+        //console.log("adding spawnsBusy to " +  spawn.name)
         return true;
     } else if (outcome == ERR_NOT_IN_RANGE) {
         this.setTask(CreepTasks.RENEWING_MOVING_TO_SPAWN);
         this.moveTo(spawn);
-        if (this.pos.getRangeTo(spawn) <= 1 && allowRecall){
+        if (this.pos.getRangeTo(spawn) <= 1 && allowRecall) {
             outcome = spawn.renewCreep(this)
-            return this.handleRenewCreepOutCome(outcome,spawn,false)
+            return this.handleRenewCreepOutCome(outcome, spawn, false)
         }
         return true;
     } else if (outcome == ERR_FULL) {
@@ -19,9 +20,9 @@ Creep.prototype.handleRenewCreepOutCome = function (outcome,spawn,allowRecall) {
     } else if (outcome == ERR_NOT_ENOUGH_ENERGY) {
         if (this.store[RESOURCE_ENERGY] > 0) {
             this.transfer(spawn, RESOURCE_ENERGY)
-            if (allowRecall){
+            if (allowRecall) {
                 outcome = spawn.renewCreep(this)
-                return this.handleRenewCreepOutCome(outcome,spawn,false)
+                return this.handleRenewCreepOutCome(outcome, spawn, false)
             }
             return true;
         }
@@ -41,9 +42,9 @@ Creep.prototype.handleRenewCreepOutCome = function (outcome,spawn,allowRecall) {
         return false;
     } else if (outcome == ERR_BUSY) {
         spawn = this.room.findFreeSpawns(this)[0];
-        if (spawn && allowRecall){
+        if (spawn && allowRecall) {
             outcome = spawn.renewCreep(this)
-            return this.handleRenewCreepOutCome(outcome,spawn,false)
+            return this.handleRenewCreepOutCome(outcome, spawn, false)
         }
         this.log("Spawn is busy", LogLevel.DEBUG)
     } else {
@@ -68,15 +69,15 @@ Creep.prototype.review = function (force) {
     if (this.getRoleConfig().maxBodyCost <= maxBodySize) {
         maxBodySize = this.getRoleConfig().maxBodyCost
     }
-    
+
     /**
      *  Old Model
      */
     if (this.getBodyCost() < maxBodySize - 150 // 150 allow for rounding
-        && this.body.length !== 50) { 
+        && this.body.length !== 50) {
         // Disable to allow new model to be created
-        
-        this.log("Old Model - BodyCode: " + this.getBodyCost() + "; maxBodySize: " +maxBodySize-150 ,LogLevel.ALWAYS)
+
+        this.log("Old Model - BodyCode: " + this.getBodyCost() + "; maxBodySize: " + maxBodySize - 150, LogLevel.ALWAYS)
         this.memory.AllowRenewing = false;
     } else {
         this.memory.AllowRenewing = true;
@@ -110,7 +111,7 @@ Creep.prototype.review = function (force) {
             || force
         )) {
 
-        if (force) {this.memory.tickBeforeReview = 0 }
+        if (force) { this.memory.tickBeforeReview = 0 }
 
         this.log("Renew creep", LogLevel.DEBUG);
         // /* Max number of creeps allowed to renew
@@ -129,13 +130,13 @@ Creep.prototype.review = function (force) {
         var spawns = this.room.findSpawns()
         var spawn;
         for (i in spawns) {
-            console.log(spawns[i])
-            if (!spawns[i].isBusy(this,true)) {
+            if (!spawns[i].spawning && !this.room.memory.spawnsBusy.includes(spawns[i].name)) {
                 spawn = spawns[i]
+                break
             }
         }
-        
-        console.log(spawn + spawn.isBusy())
+
+
         /** No spawn in this room */
         if (!spawn) {
             this.log("No free spawn", LogLevel.INFO);
@@ -147,17 +148,16 @@ Creep.prototype.review = function (force) {
                 this.memory.tickBeforeReview = 60;
                 return false;
             }
-            
+
         }
-        console.log(this.room.findFreeSpawns(this,true))
-        console.log(spawn + spawn.isBusy())
+
 
         if (!spawn) {
             this.log("no spawn in this room", LogLevel.INFO);
             this.memory.tickBeforeReview = 60;
             return false;
         }
-        
+
 
         // if (spawn && !this.pos.inRangeTo(spawn.pos,1)){
         //     this.log("spwan not in range moving", LogLevel.INFO);
@@ -166,11 +166,23 @@ Creep.prototype.review = function (force) {
         // }
 
         this.setTask(CreepTasks.RENEWING);
+        this.room.removeCreepFromMemory(this.name)
+
+        if (this.pos.isNearTo(spawn)){
+            if (this.store[RESOURCE_ENERGY] > 0 && spawn.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+                this.transfer(spawn, RESOURCE_ENERGY)
+            }
+            var r = spawn.renewCreep(this);
+            return this.handleRenewCreepOutCome(r, spawn, true);
+        } else {
+            this.moveTo(spawn)
+            return true
+        }
+        
         
 
 
-        var r = spawn.renewCreep(this);
-        return this.handleRenewCreepOutCome(r,spawn,true);
+        
     } else if (this.memory.recycle) {
         /* Handles recycling
         */
@@ -197,7 +209,7 @@ Creep.prototype.review = function (force) {
 
 Creep.prototype.recycle = function () {
     this.memory.recycle = true
-    this.memory.tickBeforeReview = 0 
+    this.memory.tickBeforeReview = 0
     this.memory.AllowRenewing = false;
 }
 

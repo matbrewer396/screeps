@@ -20,6 +20,10 @@ var roleUpgrader = {
         if (creep.pos.getRangeTo(target) == 0) {
             creep.log("Upgrading", LogLevel.DEBUG);
             creep.setTask(CreepTasks.UPGRADE_CONTROLLER);
+
+            if (creep.store[RESOURCE_ENERGY]<25) {
+                creep.withdraw(target, RESOURCE_ENERGY)
+            }
             var r = creep.upgradeController(creep.room.controller);
             if (r == ERR_NOT_ENOUGH_RESOURCES) {
                 let withDrawOutcome = creep.withdraw(target, RESOURCE_ENERGY);
@@ -53,11 +57,12 @@ var roleUpgrader = {
         energyAvailable -= CreepBody.filter(function (r) { return r.Part == CARRY })[0].Cost;
         body.push(MOVE)
         energyAvailable -= CreepBody.filter(function (r) { return r.Part == MOVE })[0].Cost;
-        body = fnBuildBody(body, [WORK], energyAvailable)
+        body = fnBuildBody(body, [WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,WORK,MOVE], energyAvailable)
         room.log("Spawning new Upgrader - " + name + ' body: ' + body.toString(), LogLevel.DEBUG);
         return { name, body, memory };
 
-    }, noRequiredCreep: function(room) {
+    }
+    , noRequiredCreep: function(room) {
 
         //let noRequired = Math.round(room.controllerContainersEnergy() / 3000);
         // if (noRequired > _.sum(room.findMyCreeps(), (c) => c.memory.role == Role.UPGRADER && c.ticksToLive > 50)) {
@@ -65,11 +70,15 @@ var roleUpgrader = {
         //     spawnCreep(Role.UPGRADER, room);
         // }
 
-        if (!room.heathyStorageReserve()){
-            return
-        }
+        // if (!room.heathyStorageReserve()){
+        //     return 0
+        // }
 
-        return Math.round(room.controllerContainersEnergy() / myConfig.ratioControllerContainersEnergy)
+        if (room.controller.level > 6) {
+            return 1 // so fast they will burn containter before its able to refill
+        } else {
+            return Math.round(room.controllerContainersEnergy() / myConfig.ratioControllerContainersEnergy)
+        }
     }
 };
 
@@ -92,3 +101,5 @@ function assignContainer(creep) {
 }
 
 module.exports = roleUpgrader;
+const profiler = require("screeps-profiler");
+profiler.registerObject(module.exports, 'roleUpgrader');

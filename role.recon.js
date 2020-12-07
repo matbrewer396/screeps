@@ -74,3 +74,5 @@ var roleRecon = {
 
 };
 module.exports = roleRecon;
+const profiler = require("screeps-profiler");
+profiler.registerObject(module.exports, 'roleRecon');

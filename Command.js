@@ -32,12 +32,13 @@ global.Command = class Command {
                     }
     
                 })[0]
-        } else if (!Memory.rapidResponseGuardianQueue.includes(roomName)) {
-            Memory.rapidResponseGuardianQueue.push(roomName)
-            return "COMMAND RESPONSE - Guardian ordered"
         } else {
-            return "COMMAND RESPONSE - Guardian already requested"
+            Military.rapidResponseRequest(roomName)
+            return "COMMAND RESPONSE - Guardian ordered"
         }
 
     }
 }
+
+const profiler = require("screeps-profiler");
+profiler.registerObject(module.exports, 'Command');

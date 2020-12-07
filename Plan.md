@@ -53,6 +53,8 @@ claimer
 
 Minder
     - go back and though rather then reviewing 
+    - go back far to often with lie 1000 tickets to live 
+    
 
 
 

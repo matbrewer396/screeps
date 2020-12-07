@@ -1,8 +1,7 @@
-﻿var spawnRequested = false;
-var renewRequested = false;
-StructureSpawn.prototype.isBusy = function (creep,dontCheckForCreepInRange) {
+﻿StructureSpawn.prototype.isBusy = function (creep,dontCheckForCreepInRange) {
+    
     //** find nearby creeps that need to renew */
-    if ( this.spawning || spawnRequested || renewRequested
+    if ( this.spawning //|| this.room.memory.spawnsBusy.include(this.name).length > 0
     ) {
         return true
     } else {

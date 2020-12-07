@@ -2,16 +2,25 @@ var roleCarrier = {
 
     /** @param {Creep} creep **/
     run: function(creep) {
+
+        //if (creep.room.heathyStorageReserve() )
+
+        // if (creep.name == "CARRIER_7319") {
+        //     creep.setTask(CreepTasks.FIND_ENERGY);
+        //     creep.collectResource(true);
+        //     return;
+        // }
+
         if (creep.store[RESOURCE_ENERGY] == 0 || (creep.getTask() == CreepTasks.FIND_ENERGY) ) {
             creep.setTask(CreepTasks.FIND_ENERGY);
-            creep.collectEnergy(true);
+            creep.collectResource(true);
             return;
         };
 
         if (!creep.dropOffEnergy()){
-            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > 0) {
+            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) > creep.store.getCapacity(RESOURCE_ENERGY) * 10 ) {
                 creep.setTask(CreepTasks.FIND_ENERGY);
-                creep.collectEnergy(true);
+                creep.collectResource(true);
                 return;
             }
             // tod get from sour e
@@ -47,3 +56,5 @@ var roleCarrier = {
 
 
 module.exports = roleCarrier;
+const profiler = require("screeps-profiler");
+profiler.registerObject(module.exports, 'roleCarrier');

@@ -1,24 +1,26 @@
 global.config = {
     /* Logging
     */
+
     roomSummary: LogLevel.ALWAYS,
     LogLevel: {
         Room: LogLevel.NOTHING,
         Creep: LogLevel.NOTHING,
         StructureSpawn: LogLevel.NOTHING,
+        Military: LogLevel.DEBUG,
     },
     LogOverRide: {
         Room: "",
-        Creep: "GUARDIAN_3474", // MINER_3532
+        Creep: "", // CARRIER_8796
         StructureSpawn: "",
     },
     cpuProfiler: {
         Enabled: true,
         ShowAll: false,
         High: {
-            1:2, // Process object
-            2:1, // Sub task
-            3:0.5,// function
+            1: 2, // Process object
+            2: 1, // Sub task
+            3: 0.5,// function
         }
     },
     Creep: {
@@ -39,6 +41,9 @@ global.config = {
         },
         Debug: {
             Visual: "fuchsia"
+        },
+        isUnderAttack: {
+            Expiry: 20 // after 20 ticks will stop fleeing 
         }
     },
 
@@ -49,26 +54,30 @@ global.config = {
 
     Roles: [
         {
-            roleName: "harvester",
+            roleName: Role.HARVESTER,
             tickBeforeReview: 600, // should every auto review
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
-            dropOffAtStorage: true,
+            dropOffAtStorageFirst: true,
             dropOffAtUpgradeContainer: true,
             pickUpDroppedInRange: 10,
             harvestSourceWithInRange: 10, // this creep has to room pos and then finds sources within this range 
             noSourcesReturnHomeLessThenFree: 100,
             blockSpawnRetryLater: true,
-            upgradeIfStorageOver: 200000
+            upgradeIfStorageOver: 200000,
+            pickUpNonEnergy: true, // Allow creep to pick up minimal
+            maxBodyCost: 2650,
         },
         {
-            roleName:  Role.UPGRADER,
+            roleName: Role.UPGRADER,
             tickBeforeReview: 60,
             renewAt: 0,
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
-            ratioControllerContainersEnergy: 4000 // controllerContainersEnergy / x
+            ratioControllerContainersEnergy: 4000, // controllerContainersEnergy / x
+            maxBodyCost: 4700,
+            pickUpNonEnergy: false, // Allow creep to pick up minimal
         },
         {
             roleName: "miner",
@@ -77,13 +86,19 @@ global.config = {
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
             maxBodyCost: 650, // 6 * 100  (10 WORK, Cost 100) + 50 (MOVE, Cost 50) 
+            pickUpNonEnergy: false, // Allow creep to pick up minimal
         },
         {
             roleName: "carrier",
             tickBeforeReview: 60,
             renewAt: 600,
             enforeMaxNoOfCreepReviewAtOnce: true,
+            dropOffAtStorage: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
+            maxBodyCost: 2600,
+            pickUpNonEnergy: true, // Allow creep to pick up minimal
+            withLimitlessFromStorage: true,
+            dropOffAtUpgradeContainerFirst: false,
         },
         {
             roleName: "worker",
@@ -92,13 +107,16 @@ global.config = {
             enforeMaxNoOfCreepReviewAtOnce: true,
             overRideReviewAtOnceIfLiveLessThen: 300,
             repairStructuresAtHealthPercentage: 90, // Repair at this percetage
+            pickUpNonEnergy: false, // Allow creep to pick up minimal
+            dropOffAtUpgradeContainerFirst: true,
         },
         {
             roleName: Role.GUARDIAN,
             tickBeforeReview: 60,
             renewAt: 500,
             enforeMaxNoOfCreepReviewAtOnce: true,
-            overRideReviewAtOnceIfLiveLessThen: 300
+            overRideReviewAtOnceIfLiveLessThen: 300,
+            recycleAfterNoHostile: 150,
         },
         {
             roleName: Role.RECON,
@@ -108,7 +126,7 @@ global.config = {
             overRideReviewAtOnceIfLiveLessThen: 300
         },
 
-        
+
 
     ],
 
@@ -129,8 +147,16 @@ global.config = {
         searchLevel: 2
     },
 
-    Repair: {
-
+    MoveTo: {
+        withDraw: {
+            visualizePathStyle: {
+                fill: 'transparent',
+                stroke: '#fff',
+                lineStyle: 'dashed',
+                strokeWidth: .15,
+                opacity: .1
+            },
+        },
     },
     // Storage: {
     //     WithDrawLimit: {
@@ -140,14 +166,14 @@ global.config = {
 
     Room: {
         HeathyStorageReserve: {
-            1:20000,
-            2:20000,
-            3:20000,
-            4:20000,
-            5:20000,
-            6:40000,
-            7:80000,
-            8:160000,
+            1: 20000,
+            2: 20000,
+            3: 20000,
+            4: 20000,
+            5: 20000,
+            6: 40000,
+            7: 80000,
+            8: 160000,
         },
         ExcessiveStorageReserve: 800000,
         Stages: {
@@ -211,7 +237,7 @@ global.config = {
 
     },
     Planner: {
-        ReviewEvery : 100,
+        ReviewEvery: 100,
         ShowAll: true,
         Visual: {
             Road: "navy",
